@@ -1,0 +1,276 @@
+## Loads default set of integrations. Do not remove.
+default_config:
+
+## Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+#group: !include groups.yaml
+
+## Themes (for custom Mushroom theme)
+frontend:
+  themes: !include_dir_merge_named themes
+
+
+## Reduce write cycles
+recorder:
+    commit_interval: 60
+    purge_keep_days: 3
+    include:
+        entities: 
+            - sensor.zonneplan_p1_electricity_consumption_today
+            - sensor.zonneplan_p1_electricity_consumption_today_cost
+            - sensor.zonneplan_p1_electricity_returned_today
+            - sensor.zonneplan_p1_electricity_returned_today_compensation
+            - sensor.zonneplan_p1_gas_consumption_today
+            - sensor.zonneplan_p1_gas_consumption_today_cost
+            - sensor.zonneplan_current_gas_tariff
+            - sensor.openweathermap_temperature
+            - sensor.openweathermap_humidity
+            - sensor.brandstofprijs_euro95
+            - sensor.brandstofprijs_super
+            - sensor.brandstofprijs_diesel
+            - sensor.processor_use
+            - sensor.processor_temperature
+            - sensor.disk_use_percent_config
+
+logger:
+    default: critical
+    logs:
+        # log level for HA core
+        homeassistant.core: fatal
+
+
+## Custom template sensors
+template:
+
+    # How long before plant needs water
+  - sensor:
+      - name: "Plant water" 
+        state: >
+          {{ states('input_number.plant_water') | int - (now() - states( 'input_datetime.plant_water') | as_datetime | as_local ).days }}
+        icon: mdi:clock-end
+        unit_of_measurement: 'dagen'
+
+    # Start time for cheapest sequential hours (electricity)
+  - sensor:
+      - name: "Plug 4 cheapest energy period"
+        icon: mdi:clock
+        state: >
+          {%- set numberOfSequentialHours = states("input_number.plug_4_on_duration") | int -%}
+          {%- set lastHour = 24 -%}
+          {%- set firstHour = 0 -%}
+          {%- set sensor = "sensor.nordpool_kwh_nl_eur_3_07_021" -%}
+
+          {%- if state_attr(sensor, 'tomorrow_valid') == true -%}
+            {%- set ns = namespace(counter=0, list=[], cheapestHour=today_at("00:00") + timedelta(hours=(24)), cheapestPrice=999.00) -%}
+            {%- for i in range(firstHour + numberOfSequentialHours, lastHour+1) -%}
+              {%- set ns.counter = 0.0 -%}
+              {%- for j in range(i-numberOfSequentialHours, i) -%}
+                {%- set ns.counter = ns.counter + state_attr(sensor, 'tomorrow')[j] -%}
+              {%- endfor -%}
+              {%- set ns.list = ns.list + [ns.counter] -%}
+              {%- if ns.counter < ns.cheapestPrice -%}
+                {%- set ns.cheapestPrice = ns.counter -%}
+                {%- set ns.cheapestHour = today_at("00:00") + timedelta( hours = (24 + i - numberOfSequentialHours)) -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {{ ns.cheapestHour }}
+          {%- else -%}
+            unknown
+          {%- endif -%}
+
+    # Set weather status depending on rain, clouds
+  - sensor:
+      - name: "Weather frog status"
+        state: >-
+          {% set entity = states("sensor.openweathermap_condition") %} 
+          {% set cloud = states("sensor.openweathermap_cloud_coverage") | int %}  
+          {% set rain = states("sensor.buienalarm_precipitation") | float %} 
+          {% if entity == "fog" %}
+            fog
+          {% elif entity == "hail" %}
+            hail
+          {% elif entity == "lightning" or entity == "lightning-rainy" or entity == "exceptional" %}
+            lightning
+          {% elif entity == "snowy" or entity == "snowy-rainy" %}
+            snowy
+          {% elif rain > 0 and rain <= 0.8 %}
+            drizzle
+          {% elif rain > 0.8 %}
+            rainy
+          {% elif states("sun.sun") == "below_horizon" %}
+          {% if cloud < 20 %}
+            clear
+          {% elif cloud < 40 %}
+            mostly-clear
+          {% elif cloud < 60 %}
+            partly-cloudy-night
+          {% elif cloud < 80 %}
+            mostly-cloudy-night
+          {% else %}
+            cloudy
+          {% endif %} {% else %}
+          {% if cloud < 20 %}
+            sunny
+          {% elif cloud < 40 %}
+            mostly-sunny
+          {% elif cloud < 60 %}
+            partly-cloudy-day
+          {% elif cloud < 80 %}
+            mostly-cloudy-day
+          {% else %}
+            cloudy
+          {% endif %} {% endif %}
+        icon: mdi:weather-partly-cloudy
+
+    # Change frog location every night
+  - trigger:
+      - platform: time
+        at: "04:00:00"
+    sensor:
+      - name: "Weather frog location"
+        state: '{{ ["city", "creek", "field", "hills", "home", "orchard"] | random()}}'  # ToDo: add beach location in summer
+        icon: mdi:map-marker
+
+    # Set frog image depending on weather status and frog location
+  - sensor:
+      - name: "Weather frog image wide"
+        state: >-
+            {% set weather_status = states("sensor.weather_frog_status") %}
+            {% set frog_location = states("sensor.weather_frog_location") %}
+            {% set dict = {'sunny': {'beach':['01-sunny-beach-reading.png','01-sunny-beach-sandcastle.png','01-sunny-beach-sunscreen.png']|random(), 'city':['01-sunny-citypark-sunbathing.png','01-sunny-rooftop-pinacolada.png']|random(), 'creek':'01-sunny-creek-swimming.png', 'field':'01-sunny-field-kite.png', 'hills':'01-sunny-hills-sunbathing.png', 'home':'01-sunny-home-laundry.png', 'orchard':'01-sunny-orchard-picking.png'}, 
+            'mostly-sunny': {'beach':['02-mostly-sunny-beach-reading.png','02-mostly-sunny-beach-sandcastle.png','02-mostly-sunny-beach-sunscreen.png']|random(), 'city':['02-mostly-sunny-citypark-picnic.png','02-mostly-sunny-rooftop-pinacolada.png']|random(), 'creek':'02-mostly-sunny-creek-swimming.png', 'field':'02-mostly-sunny-field-kite.png', 'hills':'02-mostly-sunny-hills-sunbathing.png', 'home':'02-mostly-sunny-home-laundry.png', 'orchard':'02-mostly-sunny-orchard-picking.png'}, 
+            'partly-cloudy-day': {'beach':'03-partly-cloudy-day-beach-shells.png', 'city':'03-partly-cloudy-day-citypark-ukelele.png', 'creek':'03-partly-cloudy-day-creek-feet.png', 'field':['03-partly-cloudy-day-field-biking.png','03-partly-cloudy-day-field-hiking.png']|random(), 'hills':['03-partly-cloudy-day-hills-painting.png','03-partly-cloudy-day-hills-reading.png']|random(), 'home':'03-partly-cloudy-day-home-flowers.png', 'orchard':['03-partly-cloudy-day-orchard-butterflies.png','03-partly-cloudy-day-orchard-treeswing.png']|random()},
+            'mostly-cloudy-day': {'beach':'04-mostly-cloudy-day-beach-shells.png', 'city':'04-mostly-cloudy-day-citypark-ukelele.png', 'creek':'04-mostly-cloudy-day-creek-feet.png', 'field':['04-mostly-cloudy-day-field-biking.png','04-mostly-cloudy-day-field-hiking.png']|random(), 'hills':['04-mostly-cloudy-day-hills-painting.png','04-mostly-cloudy-day-hills-reading.png']|random(), 'home':'04-mostly-cloudy-day-home-flowers.png', 'orchard':['04-mostly-cloudy-day-orchard-butterflies.png','04-mostly-cloudy-day-orchard-treeswing.png']|random()},
+            'clear': {'city':'05-clear-home-lounging.png', 'creek':'05-clear-creek-stars.png', 'field':'05-clear-field-lanterns.png', 'hills':['05-clear-hills-camping.png','05-clear-hills-telescope.png']|random(), 'home':'05-clear-home-lounging.png', 'orchard':'05-clear-orchard-fireflies.png'},
+            'mostly-clear': {'city':'06-mostly-clear-home-lounging.png', 'creek':'06-mostly-clear-creek-stars.png', 'field':'06-mostly-clear-field-lanterns.png', 'hills':['06-mostly-clear-hills-camping.png','06-mostly-clear-hills-telescope.png']|random(), 'home':'06-mostly-clear-home-lounging.png', 'orchard':'06-mostly-clear-orchard-fireflies.png'},
+            'partly-cloudy-night': {'city':'07-partly-cloudy-night-home-inside.png', 'creek':'07-partly-cloudy-night-creek-fireflies.png', 'field':'07-partly-cloudy-night-field-fireflies.png', 'hills':'07-partly-cloudy-night-hills-smores.png', 'home':'07-partly-cloudy-night-home-inside.png', 'orchard':'07-partly-cloudy-night-orchard-eating.png'},
+            'mostly-cloudy-night': {'city':'08-mostly-cloudy-night-home-inside.png', 'creek':'08-mostly-cloudy-night-creek-fireflies.png', 'field':'08-mostly-cloudy-night-field-fireflies.png', 'hills':'08-mostly-cloudy-night-hills-smores.png', 'home':'08-mostly-cloudy-night-home-inside.png', 'orchard':'08-mostly-cloudy-night-orchard-eating.png'},
+            'cloudy': {'city':'26-haze-fog-dust-smoke-fruit-stand.png', 'creek':'26-haze-fog-dust-smoke-bridge.png', 'field':'26-haze-fog-dust-smoke-mountain.png', 'hills':'09-cloudy-hills-coffee.png', 'home':'09-cloudy-home-flowers.png', 'orchard':'09-cloudy-orchard-watching.png'},
+            'drizzle': {'city':'10-drizzle-home-laundry.png', 'creek':'10-drizzle-creek-leaf.png', 'field':'10-drizzle-field-leaf.png', 'hills':'10-drizzle-hills-umbrella.png', 'home':'10-drizzle-home-laundry.png', 'orchard':'10-drizzle-orchard-reading.png'},
+            'rainy': {'city':'12-heavy-rain-busstop-umbrella.png', 'creek':['11-rain-creek-leaf.png','12-heavy-rain-creek-leaf.png']|random(), 'field':'', 'hills':'11-rain-hills-umbrella.png', 'home':['11-rain-home-inside.png','11-rain-home-laundry.png']|random(), 'orchard':['11-rain-home-inside.png','11-rain-home-laundry.png']|random()},
+            'snowy': {'city':['13-flurries-citypark-snowman.png','15-snow-showers-snow-citypark-snowman.png','20-rain-snow-wintry-mix-citypark-snowman.png']|random(), 'creek':['13-flurries-creek-iceskating.png','15-snow-showers-snow-creek-iceskating.png']|random(), 'field':'16-blowing-snow-field-snowman.png', 'home':'15-snow-showers-snow-home-shoveling.png'},
+            'snow-storm': {'home':['17-heavy-snow-blizzard-home-inside.png','17-heavy-snow-blizzard-home-shoveling.png']|random(), 'field':'16-blowing-snow-field-snowman.png'},
+            'hail': {'city':['19-mixed-rain-hail-rain-sleet-busstop-waiting.png','19-mixed-rain-hail-rain-sleet-cafe-entering.png']|random()},
+            'lightning': {'city':'22-iso-thunderstorm-cafe-looking-outside.png', 'home':['22-iso-thunderstorms-home-inside.png','24-strong-thunderstorms-home-inside.png']|random()},
+            'fog': {'city':['26-haze-fog-dust-smoke-busstop-waiting.png','26-haze-fog-dust-smoke-fruit-stand.png','26-haze-fog-dust-smoke-pier.png']|random(), 'creek':'26-haze-fog-dust-smoke-bridge.png', 'field':'26-haze-fog-dust-smoke-field-lantern.png', 'hills':'26-haze-fog-dust-smoke-hills-cocoa.png', 'home':'26-haze-fog-dust-smoke-rooftop.png', 'orchard':'26-haze-fog-dust-smoke-mountain.png'}} %}
+            
+            {% if weather_status == "snowy" %}
+                {% set other_location = ['13-flurries-citypark-snowman.png', '15-snow-showers-snow-citypark-snowman.png', '20-rain-snow-wintry-mix-citypark-snowman.png', '13-flurries-creek-iceskating.png', '15-snow-showers-snow-creek-iceskating.png', '16-blowing-snow-field-snowman.png', '15-snow-showers-snow-home-shoveling.png'] | random() %}
+            {% elif weather_status == "snow-storm" %}
+                {% set other_location = ['17-heavy-snow-blizzard-home-inside.png', '17-heavy-snow-blizzard-home-shoveling.png', '16-blowing-snow-field-snowman.png'] | random() %}
+            {% elif weather_status == "lightning" %}
+                {% set other_location = ['22-iso-thunderstorm-cafe-looking-outside.png', '22-iso-thunderstorms-home-inside.png', '24-strong-thunderstorms-home-inside.png'] | random() %}
+            {% elif weather_status == "hail" %}
+                {% set other_location = ['19-mixed-rain-hail-rain-sleet-busstop-waiting.png','19-mixed-rain-hail-rain-sleet-cafe-entering.png'] | random() %}
+            {% endif %}
+            {{ 'https://raw.githubusercontent.com/Senexis/Google-Weather-Frog/master/images/wide/' + dict[weather_status][frog_location] | default(other_location) }}
+        icon: mdi:image
+
+
+## Custom configuration.yaml entries
+sensor:
+  # Raspberry Pi system monitoring
+  - platform: systemmonitor
+    scan_interval: 60
+    resources:
+      - type: disk_use_percent
+        arg: /config
+      - type: disk_use
+      - type: disk_free
+      - type: memory_use_percent
+      - type: memory_use
+      - type: memory_free
+      - type: ipv4_address
+        arg: eth0
+      - type: processor_use
+      - type: processor_temperature
+      - type: last_boot
+
+  # Custom integration: Afvalwijzer
+  - platform: afvalwijzer
+    provider: avalex                 # (required, default = mijnafvalwijzer) either choose mijnafvalwijzer, afvalstoffendienstkalender or rova
+    postal_code: !secret postcode    # (required, default = '')
+    street_number: 1                 # (required, default = '')
+    suffix: ''                       # (optional, default = '')
+    exclude_pickup_today: true       # (optional, default = true) to take or not to take Today into account in the next pickup.
+    default_label: Geen              # (optional, default = Geen) label if no date found
+    id: ''                           # (optional, default = '') use if you'd like to have multiple waste pickup locations in HASS
+    exclude_list: ''                 # (optional, default = '') comma separated list of waste types (case ignored). F.e. "papier, gft"
+    scan_interval: 
+        hours: 3
+
+  # Custom integration: Buienalarm
+  - platform: buienalarm
+    timeframe: 120
+    name: Buienalarm
+    monitored_conditions:
+      - temperature
+      - precipitation
+      - precipitation_forecast_average
+      - precipitation_forecast_total
+      - next_rain_forecast
+    scan_interval: 
+        minutes: 30
+
+  # Custom integration: United Consumers brandstofprijzen
+  - platform: brandstofprijzen
+    monitored_variables:
+      - euro95
+      - diesel
+      - lpg
+      - super
+      # ... more available, see repo
+    icon: mdi:gas-station
+    unit_of_measurement: €/L
+    prefix: Brandstofprijs
+    scan_interval:
+        hours: 3
+
+  # Custom integration: NordPool
+  - platform: nordpool
+    region: "NL"
+    # currency: "EUR"
+    VAT: True            # Add Value Added Taxes (VAT)?
+    precision: 3         # Energy price rounding precision.
+    price_in_cents: false
+    price_type: kWh      # MWh, kWh or Wh
+    
+    # Percentage of average price to set the low price attribute
+    # low_price = hour_price < average * low_price_cutoff
+    low_price_cutoff: 0.70
+
+    # Template to specify additional cost to be added to the tariff.
+    # The template price is in EUR, DKK, NOK or SEK (not in cents).
+    # For example: "{{ current_price * 0.19 + 0.023 | float}}" 
+    additional_costs: >-
+      {% set s = {"NextEnergy": 0.0183, "Zonneplan": 0.01653, "energie_belasting": 0.12599} %}
+      {{ (s.Zonneplan + s.energie_belasting ) | float }}
+
+
+## Yahoo Finance
+yahoofinance:
+  symbols:
+    - !secret yahoo_finance_1
+    - !secret yahoo_finance_2
+    - !secret yahoo_finance_3
+  show_trending_icon: true
+  scan_interval:
+    minutes: 30
+
+
+## Telegram Bot
+telegram_bot:
+  - platform: polling
+    api_key: !secret telegram_api_key
+    allowed_chat_ids:
+      - !secret telegram_chat_id
+
+notify:
+  - platform: telegram
+    name: !secret telegram_name
+    chat_id: !secret telegram_chat_id
