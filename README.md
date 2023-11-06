@@ -9,17 +9,18 @@ You will need to install the following frontend dependencies (using HACS or manu
 
 Dependency | Mandatory | Use-case |
 --- | --- | --- |
-layout-card | yes | Determines the layout |
-mushroom | yes | For the basic cards |
-stack-in-card | yes | Combines several cards into one |
-lovelace-card-mod | yes | Modifies card appearances |
-decluttering-card | yes | Re-use card templates to declutter lovelace config |
-button-card | recommended | For the custom-made cards |
-mini-graph-card | no | For displaying a simple graph |
-apexcharts-card | no | For displaying advanced graphs and charts |
-bar-card | no | For displaying a bar |
-hourly-weather-card | no | For displaying weather forecasts as a bar |
-swipe-card | no | For swiping between cards |
+[layout-card](https://github.com/thomasloven/lovelace-layout-card) | yes | Determines the layout |
+[mushroom](https://github.com/piitaya/lovelace-mushroom) | yes | For the basic cards |
+[stack-in-card](https://github.com/custom-cards/stack-in-card) | yes | Combines several cards into one |
+[lovelace-card-mod](https://github.com/thomasloven/lovelace-card-mod) | yes | Modifies card appearances |
+[decluttering-card](https://github.com/custom-cards/decluttering-card) | yes | Re-use card templates to declutter lovelace config |
+[button-card](https://github.com/custom-cards/button-card) | recommended | For the custom-made cards |
+[mini-graph-card](https://github.com/kalkih/mini-graph-card) | no | For displaying a simple graph |
+[apexcharts-card](https://github.com/RomRider/apexcharts-card) | no | For displaying advanced graphs and charts |
+[bar-card](https://github.com/custom-cards/bar-card) | no | For displaying a bar |
+[hourly-weather-card](https://github.com/decompil3d/lovelace-hourly-weather) | no | For displaying weather forecasts as a bar |
+[swipe-card](https://github.com/bramkragten/swipe-card) | no | For swiping between cards |
+[browser-mod](https://github.com/thomasloven/hass-browser_mod) | no | For displaying popus |
 
 ### 2. Installing the theme
 The theme defines the dashboard appearance and some variables necessary for light/dark mode. To make sure my theme is not overwritten by a Mushroom update, I put the file in a separate folder in the `themes` directory called `Adaptive Mushroom` next to the `Mushroom` folder that is there if you're using that theme.
@@ -49,7 +50,7 @@ views:
     icon: mdi:home-assistant
     path: home
     visible:
-      - user: 12345678901234567980  # In step 9 you will edit the view in the UI to change visibility
+      - user: 12345678901234567980  # In step 10 you will edit the view in the UI to change visibility
     type: custom:grid-layout
     layout:
       grid-template-columns: 0em 74px 30% 30% 30% auto
@@ -95,8 +96,8 @@ views:
           - type: custom:decluttering-card
             template: bottom-nav
             variables:
-              - dashboard-name: dashboard-view
-              - active-view: home
+              - dashboard-name: dashboard-view  # Edit to your dashboard URL
+              - active-view: home  # Edit to the active dashboard view
         card_mod:
           style: |
             :host {
@@ -149,9 +150,9 @@ views:
                 --title-padding: 12px 12px 0px;
               }
 ```
-7. Click on `Save` and then `X`. If you left in comments, they won't be saved, but that's ok.
-8. You should now have a title and a navigation menu on the left of the screen for tablet/desktop and on the bottom of the screen for mobile (please note that the bottom navigation footer needs more content to stay at the bottom of the page).
-9. Edit the view in the UI to change its visibility.
+8. Click on `Save` and then `X`. If you left in comments, they won't be saved, but that's ok.
+9. You should now have a title and a navigation menu on the left of the screen for tablet/desktop and on the bottom of the screen for mobile (please note that the bottom navigation footer needs more content to stay at the bottom of the page).
+10. Edit the view in the UI to change its visibility.
 
 ### 4. Configuring the other cards and views
 Now it's time to start adding cards to your dashboard as you wish! I find it easiest to use vertical stacks to organize my layout. To place them in a specific area of the layout, add the following code to a vertical stack (or any card):
@@ -168,6 +169,15 @@ The navigation menu will start working once you add more views. Remember to chan
 
 ## ToDo's
 - [ ] Add screenshots
-- [ ] Add links to dependencies
+- [X] Add links to dependencies
 - [ ] Confirm installation steps are correct
 - [ ] Add lovelace.yaml of other views
+
+## License
+Copyright © 2023 SGA-Noud
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
