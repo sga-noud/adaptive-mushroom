@@ -1,5 +1,5 @@
 # Adaptive Mushroom
-A minimalistic Mushroom-based dashboard for Home Assistant. No more need to maintain multiple dashboards! With this setup, you can create a single minimalistic-looking dashboard for mobile/desktop and for light/dark mode.
+A minimalistic Mushroom-based dashboard for Home Assistant. No more need to maintain multiple dashboards! With this setup, you can create a single minimalistic-looking dashboard for both mobile/desktop and light/dark mode.
 
 [![Buy me a beer](https://img.shields.io/badge/Buy%20me%20a-beer-yellow?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/sganoud)
 
@@ -147,5 +147,7 @@ You can always reorganize the areas in your layout by editing the content of the
 The navigation menu will start working once you add more views. Remember to change the decluttering templates of both navigation components (called `side-nav` and `bottom-nav`) to suit your views.
 
 ## ToDo's
-[] Add screenshots
-[] Add lovelace.yaml of other views
+- [ ] Add screenshots
+- [ ] Add links to dependencies
+- [ ] Confirm installation steps are correct
+- [ ] Add lovelace.yaml of other views
