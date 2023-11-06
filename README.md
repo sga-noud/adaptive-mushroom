@@ -5,16 +5,16 @@ A minimalistic Mushroom-based dashboard for Home Assistant. No more need to main
 
 ## Installation
 ### 1. Installing dependencies
-You will need to install the following frontend dependencies (using HACS or manually). Some are mandatory for the adaptive layout to work properly, others are used only for specific cards in my personal dashboard. If you want to use some of my custom cards you will likely need button-card and stack-in-card.
+You will need to install the following frontend dependencies (using HACS or manually). Some are mandatory for the adaptive layout to work properly, others are used only for specific cards in my personal dashboard. If you want to use some of my custom cards you will likely need button-card, for example.
 
 Dependency | Mandatory | Use-case |
 --- | --- | --- |
 layout-card | yes | Determines the layout |
 mushroom | yes | For the basic cards |
+stack-in-card | yes | Combines several cards into one |
 lovelace-card-mod | yes | Modifies card appearances |
 decluttering-card | yes | Re-use card templates to declutter lovelace config |
 button-card | recommended | For the custom-made cards |
-stack-in-card | recommended | Combines several cards into one |
 mini-graph-card | no | For displaying a simple graph |
 apexcharts-card | no | For displaying advanced graphs and charts |
 bar-card | no | For displaying a bar |
@@ -89,11 +89,31 @@ views:
           grid-area: nav
           show:
             mediaquery: '(min-width: 400px)'
-      - type: custom:decluttering-card
-        template: bottom-nav
-        variables:
-          - dashboard-name: dashboard-view  # Edit to your dashboard URL
-          - active-view: home  # Edit to the active dashboard view
+      - type: custom:stack-in-card
+        mode: horizontal
+        cards:
+          - type: custom:decluttering-card
+            template: bottom-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: home
+        card_mod:
+          style: |
+            :host {
+              z-index: 4;
+              position: sticky !important;
+              position: -webkit-sticky;
+              bottom: 0;
+            }
+            ha-card {    
+              background: rgb(var(--cstm-rgb-bottom-nav));
+              box-shadow: none;
+              padding-bottom: 15px;
+              margin: 0px -4px -8px;
+              border-radius: 0px;
+            }
+            # The sticky position doesn't work with Decluttering card, so you have to add the CSS here
+            # If you don't use the UI you can use YAML anchors instead
         view_layout:
           grid-area: footer
           show:
