@@ -186,7 +186,7 @@ decluttering_templates:
                 }
         - type: custom:mushroom-template-card
           primary: ''
-          secondary: Home
+          secondary: Apparaten
           icon: mdi:devices
           icon_color: |
             {% if '[[active-view]]' == 'apparaten' %}
