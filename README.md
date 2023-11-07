@@ -3,27 +3,30 @@ A minimalistic Mushroom-based dashboard for Home Assistant. No more need to main
 
 [![Buy me a beer](https://img.shields.io/badge/Buy%20me%20a-beer-yellow?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/sganoud)
 
+Adaptive Mushroom is heavily inspired by [7ahang's work](https://www.behance.net/gallery/88433905/Redesign-Smart-Home) on Behance, so be sure to check that out!
+
 ## Installation
 ### 1. Installing dependencies
-You will need to install the following frontend dependencies (using HACS or manually). Some are mandatory for the adaptive layout to work properly, others are used only for specific cards in my personal dashboard. If you want to use some of my custom cards you will likely need button-card, for example.
+You will need to install the following frontend dependencies (using HACS or manually). Some are required for the adaptive layout to work properly, others are used only for specific cards in my personal dashboard. If you want to use some of my custom cards you will likely need button-card, for example.
 
 Dependency | Mandatory | Use-case |
 --- | --- | --- |
 [layout-card](https://github.com/thomasloven/lovelace-layout-card) | yes | Determines the layout |
 [mushroom](https://github.com/piitaya/lovelace-mushroom) | yes | For the basic cards |
 [stack-in-card](https://github.com/custom-cards/stack-in-card) | yes | Combines several cards into one |
-[lovelace-card-mod](https://github.com/thomasloven/lovelace-card-mod) | yes | Modifies card appearances |
+[card-mod](https://github.com/thomasloven/lovelace-card-mod) | yes | Modifies card appearances |
 [decluttering-card](https://github.com/custom-cards/decluttering-card) | yes | Re-use card templates to declutter lovelace config |
-[button-card](https://github.com/custom-cards/button-card) | recommended | For the custom-made cards |
+[button-card](https://github.com/custom-cards/button-card) | no | For buttons below custom-made cards |
 [mini-graph-card](https://github.com/kalkih/mini-graph-card) | no | For displaying a simple graph |
 [apexcharts-card](https://github.com/RomRider/apexcharts-card) | no | For displaying advanced graphs and charts |
 [bar-card](https://github.com/custom-cards/bar-card) | no | For displaying a bar |
 [hourly-weather-card](https://github.com/decompil3d/lovelace-hourly-weather) | no | For displaying weather forecasts as a bar |
 [swipe-card](https://github.com/bramkragten/swipe-card) | no | For swiping between cards |
+[state-switch](https://github.com/thomasloven/lovelace-state-switch) | no | For complex conditional cards |
 [browser-mod](https://github.com/thomasloven/hass-browser_mod) | no | For displaying popus |
 
 ### 2. Installing the theme
-The theme defines the dashboard appearance and some variables necessary for light/dark mode. To make sure my theme is not overwritten by a Mushroom update, I put the file in a separate folder in the `themes` directory called `Adaptive Mushroom` next to the `Mushroom` folder that is there if you're using that theme.
+The theme defines the dashboard appearance and some variables necessary for light/dark mode. To make sure my theme is not overwritten by a Mushroom update, I put the file in a separate folder in the `themes` directory called `Adaptive Mushroom` next to the `Mushroom` folder that is already there if you're using that theme.
 1. Copy the `themes/adaptive-mushroom` folder to your Home Assistant `themes` directory.
 2. Add the following lines to your `configuration.yaml`:
 ```yaml
@@ -100,6 +103,8 @@ views:
               - active-view: home  # Edit to the active dashboard view
         card_mod:
           style: |
+            # The sticky position doesn't work with Decluttering card, so you have to add the CSS here
+            # If you don't use the UI you can use YAML anchors instead
             :host {
               z-index: 4;
               position: sticky !important;
@@ -113,8 +118,6 @@ views:
               margin: 0px -4px -8px;
               border-radius: 0px;
             }
-            # The sticky position doesn't work with Decluttering card, so you have to add the CSS here
-            # If you don't use the UI you can use YAML anchors instead
         view_layout:
           grid-area: footer
           show:
@@ -165,7 +168,7 @@ view_layout:
 ```
 You can always reorganize the areas in your layout by editing the content of the `custom:grid-layout` card that is at the base of the dashboard view.
 
-The navigation menu will start working once you add more views. Remember to change the decluttering templates of both navigation components (called `side-nav` and `bottom-nav`) to suit your views.
+The navigation menu will start working once you add more views. Remember to change the decluttering templates of both navigation components (called `side-nav` and `bottom-nav`) to suit your view names and icons.
 
 ## ToDo's
 - [ ] Add screenshots
