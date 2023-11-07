@@ -589,7 +589,7 @@ views:
     icon: mdi:home-assistant
     path: home
     visible:
-      - user: 12345678901234567890
+      - user: 12345678901234567890  # Edit to your users
     type: custom:grid-layout
     layout:
       grid-template-columns: 0em 74px 30% 30% 30% auto
@@ -705,7 +705,7 @@ views:
             entity: template
             template: >-
               {% if is_state("media_player.chromecast_4k", ["off", "idle",
-              "unavailable"]) and is_state("media_player.tv_ue40ju6400",
+              "unavailable"]) and is_state("media_player.tv",
               "unavailable") and is_state("media_player.chromecast_audio",
               ["off", "idle", "unavailable"]) %} hide {% else %} show {% endif
               %}
@@ -742,13 +742,13 @@ views:
               entity: media_player.chromecast_4k
           - type: conditional
             conditions:
-              - entity: media_player.tv_ue40ju6400
+              - entity: media_player.tv
                 state_not: unavailable
             card:
               type: custom:vertical-stack-in-card
               cards:
                 - type: custom:mushroom-template-card
-                  entity: media_player.tv_ue40ju6400
+                  entity: media_player.tv
                   primary: Samsung TV
                   secondary: |-
                     {% if is_state(entity, 'on') %}
@@ -771,7 +771,7 @@ views:
                   layout_type: custom:grid-layout
                   cards:
                     - type: custom:button-card
-                      entity: media_player.tv_ue40ju6400
+                      entity: media_player.tv
                       icon: |
                         [[[ if (entity.attributes.is_volume_muted) {
                               return 'mdi:volume-off'
@@ -1081,7 +1081,7 @@ views:
               - type: custom:vertical-stack-in-card
                 cards:
                   - type: custom:mushroom-template-card
-                    primary: Ziggo43969
+                    primary: Ziggo WiFi
                     secondary: Verbonden
                     icon: mdi:wifi
                     entity: sensor.speedtest_download
@@ -1104,24 +1104,24 @@ views:
                                     cards:
                                       - type: custom:mushroom-entity-card
                                         entity: >-
-                                          sensor.compal_broadband_networks_inc_ch7465lg_packets_s_received
+                                          sensor.compal_broadband_networks_packets_s_received
                                         name: Ontvangen
                                         icon: mdi:download
                                         icon_color: deep-orange
                                       - type: custom:mushroom-entity-card
                                         entity: >-
-                                          sensor.compal_broadband_networks_inc_ch7465lg_packets_s_sent
+                                          sensor.compal_broadband_networks_packets_s_sent
                                         name: Verzonden
                                         icon: mdi:upload
                                         icon_color: blue
                                   - type: custom:mini-graph-card
                                     entities:
                                       - entity: >-
-                                          sensor.compal_broadband_networks_inc_ch7465lg_packets_s_received
+                                          sensor.compal_broadband_networks_packets_s_received
                                         name: Ontvangen
                                         color: rgb(var(--mush-rgb-deep-orange))
                                       - entity: >-
-                                          sensor.compal_broadband_networks_inc_ch7465lg_packets_s_sent
+                                          sensor.compal_broadband_networks_packets_s_sent
                                         name: Verzonden
                                     hours_to_show: 8
                                     hour24: true
@@ -1205,7 +1205,6 @@ views:
                     template: plug_template
                     variables:
                       - entity: switch.local_tuya_plug_4
-                      - primary: Fietslader
                   - type: custom:layout-card
                     layout_type: custom:grid-layout
                     cards:
@@ -2263,4 +2262,1505 @@ views:
                     }
         view_layout:
           grid-area: people
+  - theme: Adaptive Mushroom
+    title: Apparaten
+    path: apparaten
+    icon: mdi:devices
+    type: custom:grid-layout
+    layout:
+      grid-template-columns: 0em 74px 30% 30% 30% auto
+      grid-template-rows: grid-title-row-height auto auto auto auto
+      grid-gap: 0.5em
+      grid-template-areas: |
+        ". . title title chips ."
+        ". nav media lights cameras ."
+        ". nav media lights batteries ."
+      mediaquery:
+        '(max-width: 400px)':
+          grid-template-columns: 3% 94% 3%
+          grid-template-rows: auto
+          grid-gap: 0em
+          grid-template-areas: |
+            ". title ."
+            ". chips ."
+            ". lights ."
+            ". media ."
+            ". cameras ."
+            ". batteries ."
+            "footer footer footer"
+    visible:
+      - user: 12345678901234567890  # Edit to your users
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ' '
+          - type: custom:decluttering-card
+            template: side-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: apparaten
+        view_layout:
+          grid-area: nav
+          show:
+            mediaquery: '(min-width: 400px)'
+      - type: custom:stack-in-card
+        mode: horizontal
+        cards:
+          - type: custom:decluttering-card
+            template: bottom-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: apparaten
+        card_mod:
+          style: |
+            # The sticky position doesn't work with Decluttering card, so I have to add the CSS here
+            # If you don't use the UI you can use YAML anchors instead
+            :host {
+              z-index: 4;
+              position: sticky !important;
+              position: -webkit-sticky;
+              bottom: 0;
+            }
 
+            ha-card {    
+              background: rgb(var(--cstm-rgb-bottom-nav));
+              box-shadow: none;
+              padding-bottom: 15px;
+              margin: 0px -4px -8px;
+              border-radius: 0px;
+            }
+        view_layout:
+          grid-area: footer
+          show:
+            mediaquery: '(max-width: 400px)'
+      - type: custom:mod-card
+        card:
+          type: custom:mushroom-title-card
+          title: Apparaten
+          subtitle: ''
+        card_mod:
+          style:
+            mushroom-title-card$: |
+              h1 {
+                --title-font-size: 26px;
+                --title-font-weight: bold;
+                --title-line-height: 1;
+              }
+              h2 {
+                --title-font-size: 16px;
+              }
+              .header {
+                --title-padding: 12px 12px 0px;
+              }
+        view_layout:
+          grid-area: title
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Televisie
+          - type: conditional
+            conditions:
+              - entity: media_player.tv
+                state_not: unavailable
+            card:
+              type: custom:vertical-stack-in-card
+              cards:
+                - type: custom:mushroom-template-card
+                  entity: media_player.tv
+                  primary: Samsung TV
+                  secondary: |-
+                    {% if is_state(entity, 'on') %}
+                      Aan • {{(state_attr(entity,'volume_level')*100) | round()}}%
+                    {% elif is_state(entity, 'idle') %}
+                      Aan • {{(state_attr(entity,'volume_level')*100) | round()}}%
+                    {% else %}
+                      Uit
+                    {% endif %}
+                  icon: mdi:television
+                  icon_color: |-
+                    {% if is_state(entity, 'on') %}
+                      red
+                    {% elif is_state(entity, 'idle') %}
+                      red
+                    {% else %}
+                      disabled
+                    {% endif %}
+                - type: custom:layout-card
+                  layout_type: custom:grid-layout
+                  cards:
+                    - type: custom:button-card
+                      entity: media_player.tv
+                      icon: |
+                        [[[ if (entity.attributes.is_volume_muted) {
+                              return 'mdi:volume-off'
+                            } else {
+                              return 'mdi:volume-high'
+                            }
+                        ]]]
+                      tap_action:
+                        action: call-service
+                        service: script.samsung_tv_volume_mute
+                      show_icon: true
+                      show_name: false
+                      styles:
+                        card:
+                          - box-shadow: none
+                          - padding: 0px
+                          - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                          - border-radius: var(--mush-control-border-radius)
+                          - place-self: center
+                          - height: var(--mush-control-height)
+                        icon:
+                          - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                      size: 20px
+                      view_layout:
+                        grid-area: item1
+                    - type: custom:button-card
+                      icon: mdi:volume-minus
+                      tap_action:
+                        action: call-service
+                        service: script.samsung_tv_volume_down
+                      hold_action:
+                        action: call-service
+                        service: script.samsung_tv_volume_down
+                        repeat: 500
+                      show_icon: true
+                      show_name: false
+                      styles:
+                        card:
+                          - box-shadow: none
+                          - padding: 0px
+                          - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                          - border-radius: var(--mush-control-border-radius)
+                          - place-self: center
+                          - height: var(--mush-control-height)
+                        icon:
+                          - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                      size: 20px
+                      view_layout:
+                        grid-area: item2
+                    - type: custom:button-card
+                      icon: mdi:volume-minus
+                      tap_action:
+                        action: call-service
+                        service: script.samsung_tv_volume_up
+                      hold_action:
+                        action: call-service
+                        service: script.samsung_tv_volume_up
+                        repeat: 500
+                      show_icon: true
+                      show_name: false
+                      styles:
+                        card:
+                          - box-shadow: none
+                          - padding: 0px
+                          - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                          - border-radius: var(--mush-control-border-radius)
+                          - place-self: center
+                          - height: var(--mush-control-height)
+                        icon:
+                          - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                      size: 20px
+                      view_layout:
+                        grid-area: item3
+                  layout:
+                    grid-template-columns: 1fr 1fr 1fr
+                    grid-template-rows: min-content
+                    grid-template-areas: |
+                      "item1 item2 item3"
+                    gap: 0px
+                    margin: '-4px 8px 4px'
+          - type: conditional
+            conditions:
+              - entity: media_player.chromecast_4k
+                state_not: 'off'
+              - entity: media_player.chromecast_4k
+                state_not: idle
+              - entity: media_player.chromecast_4k
+                state_not: unavailable
+            card:
+              type: custom:mushroom-media-player-card
+              entity: media_player.chromecast_4k
+              use_media_info: true
+              media_controls:
+                - previous
+                - play_pause_stop
+                - next
+                - on_off
+              volume_controls:
+                - volume_set
+                - volume_mute
+                - volume_buttons
+              collapsible_controls: false
+              show_volume_level: false
+              fill_container: false
+              tap_action:
+                action: more-info
+              double_tap_action:
+                action: toggle
+          - type: custom:vertical-stack-in-card
+            cards:
+              - type: custom:mushroom-entity-card
+                name: Chromecast 4K • Remote
+                icon: mdi:remote-tv
+                entity: remote.chromecast_4k
+                tap_action:
+                  action: more-info
+                icon_color: red
+              - type: custom:layout-card
+                layout_type: custom:grid-layout
+                cards:
+                  - type: custom:button-card
+                    icon: mdi:arrow-left-bottom
+                    tap_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: BACK
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item1
+                  - type: custom:button-card
+                    icon: mdi:arrow-up
+                    tap_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_UP
+                    hold_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_UP
+                        num_repeats: 1
+                        delay_secs: 0.5
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item2
+                  - type: custom:button-card
+                    icon: mdi:home
+                    tap_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: HOME
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item3
+                  - type: custom:button-card
+                    icon: mdi:arrow-left
+                    tap_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_LEFT
+                    hold_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_LEFT
+                        num_repeats: 1
+                        delay_secs: 0.5
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item4
+                  - type: custom:button-card
+                    icon: mdi:cursor-pointer
+                    tap_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_CENTER
+                    hold_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_CENTER
+                        num_repeats: 1
+                        delay_secs: 0.5
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item5
+                  - type: custom:button-card
+                    icon: mdi:arrow-right
+                    tap_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_RIGHT
+                    hold_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_RIGHT
+                        num_repeats: 1
+                        delay_secs: 0.5
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item6
+                  - type: custom:button-card
+                    entity: media_player.tv
+                    icon: |
+                      [[[ if (entity.attributes.is_volume_muted) {
+                            return 'mdi:volume-off'
+                          } else {
+                            return 'mdi:volume-high'
+                          }
+                      ]]]
+                    tap_action:
+                      action: call-service
+                      service: script.samsung_tv_volume_mute
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item7
+                  - type: custom:button-card
+                    icon: mdi:arrow-down
+                    tap_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_DOWN
+                    hold_action:
+                      action: call-service
+                      service: remote.send_command
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        command: DPAD_DOWN
+                        num_repeats: 1
+                        delay_secs: 0.5
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item8
+                  - type: custom:button-card
+                    entity: remote.chromecast_4k
+                    icon: mdi:youtube
+                    tap_action:
+                      action: call-service
+                      service: remote.turn_on
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        activity: https://www.youtube.com
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: >
+                            [[[ if (entity.attributes.current_activity ==
+                            'com.youtube') {
+                              return 'rgba(var(--mush-rgb-red),0.3)'
+                            } else {
+                              return 'rgba(var(--cstm-rgb-on-secondary),0.05)'
+                            } ]]]
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--mush-rgb-red),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item9
+                  - type: custom:button-card
+                    entity: remote.chromecast_4k
+                    icon: mdi:netflix
+                    tap_action:
+                      action: call-service
+                      service: remote.turn_on
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        activity: netflix://
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: >
+                            [[[ if (entity.attributes.current_activity ==
+                            'com.netflix.ninja') {
+                              return 'rgba(var(--mush-rgb-red),0.3)'
+                            } else {
+                              return 'rgba(var(--cstm-rgb-on-secondary),0.05)'
+                            } ]]]
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--mush-rgb-red),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item10
+                  - type: custom:button-card
+                    entity: remote.chromecast_4k
+                    entity_picture: >-
+                      https://upload.wikimedia.org/wikipedia/commons/a/ad/AppleTVLogo.svg
+                    show_entity_picture: true
+                    tap_action:
+                      action: call-service
+                      service: remote.turn_on
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        activity: https://tv.apple.com
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: >
+                            [[[ if (entity.attributes.current_activity ==
+                            'com.apple')  {
+                              return 'rgba(var(--cstm-rgb-on-secondary),0.2)'
+                            } else {
+                              return 'rgba(var(--cstm-rgb-on-secondary),0.05)'
+                            } ]]]
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 22px
+                    view_layout:
+                      grid-area: item11
+                  - type: custom:button-card
+                    entity: remote.chromecast_4k
+                    icon: mdi:spotify
+                    tap_action:
+                      action: call-service
+                      service: remote.turn_on
+                      service_data:
+                        entity_id: remote.chromecast_4k
+                        activity: spotify://
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: >
+                            [[[ if (entity.attributes.current_activity ==
+                            'spotify')  {
+                              return 'rgba(var(--mush-rgb-green),0.2)'
+                            } else {
+                              return 'rgba(var(--cstm-rgb-on-secondary),0.05)'
+                            } ]]]
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--mush-rgb-green),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item12
+                layout:
+                  grid-template-columns: 1fr 1fr 1fr 1fr
+                  grid-template-rows: min-content
+                  grid-template-areas: |
+                    ". item2 . item1"
+                    "item4 item5 item6 item3"
+                    ". item8 . item7"
+                    "item9 item10 item11 item12"
+                  gap: 0px
+                  margin: '-4px 8px 4px'
+          - type: custom:mushroom-title-card
+            title: Audio
+          - type: custom:mushroom-media-player-card
+            entity: media_player.chromecast
+            show_volume_level: true
+            use_media_info: true
+            volume_controls:
+              - volume_mute
+              - volume_set
+              - volume_buttons
+            media_controls:
+              - next
+              - play_pause_stop
+              - shuffle
+              - on_off
+              - previous
+            name: OnkyoCast
+            card_mod:
+              style: |
+                ha-card {
+                  background-image: url( '{{ state_attr(config.entity, "entity_picture") }}' );
+                  background-position: center;
+                  background-repeat: no-repeat;
+                  background-size: cover;
+                  position: relative;
+                  background-blend-mode: overlay;
+                  background-color: rgba(var(--rgb-card-background-color), 0.7);
+                }
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: conditional
+                conditions:
+                  - entity: media_player.chromecast_audio
+                    state_not: 'off'
+                  - entity: media_player.chromecast_audio
+                    state_not: unavailable
+                card:
+                  type: custom:stack-in-card
+                  keep:
+                    background: false
+                  cards:
+                    - type: custom:mushroom-entity-card
+                      entity: media_player.chromecast_audio
+                      name: Thompson
+                    - type: custom:mushroom-media-player-card
+                      entity: media_player.chromecast_audio
+                      use_media_info: true
+                      media_controls:
+                        - previous
+                        - play_pause_stop
+                        - next
+                      volume_controls:
+                        - volume_set
+                        - volume_mute
+                        - volume_buttons
+                      collapsible_controls: true
+                      show_volume_level: true
+                      fill_container: false
+                      tap_action:
+                        action: more-info
+                      icon: ''
+                      icon_type: entity-picture
+                  card_mod:
+                    style: |
+                      ha-card {
+                        background-image: url( '{{ state_attr('media_player.chromecast_audio', "entity_picture") }}' );
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: cover;
+                        position: relative;
+                        background-blend-mode: overlay;
+                        background-color: rgba(var(--rgb-card-background-color), 0.7);
+                      }
+              - type: conditional
+                conditions:
+                  - entity: media_player.chromecast_audio_philips
+                    state_not: 'off'
+                  - entity: media_player.chromecast_audio_philips
+                    state_not: unavailable
+                card:
+                  type: custom:stack-in-card
+                  keep:
+                    background: false
+                  cards:
+                    - type: custom:mushroom-entity-card
+                      entity: media_player.chromecast_audio_philips
+                      name: Philips
+                    - type: custom:mushroom-media-player-card
+                      entity: media_player.chromecast_audio_philips
+                      use_media_info: true
+                      media_controls:
+                        - previous
+                        - play_pause_stop
+                        - next
+                      volume_controls:
+                        - volume_set
+                        - volume_mute
+                        - volume_buttons
+                      collapsible_controls: true
+                      show_volume_level: true
+                      fill_container: false
+                      tap_action:
+                        action: more-info
+                      icon: ''
+                      icon_type: entity-picture
+                  card_mod:
+                    style: |
+                      ha-card {
+                        background-image: url( '{{ state_attr('media_player.chromecast_audio_philips', "entity_picture") }}' );
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: cover;
+                        position: relative;
+                        background-blend-mode: overlay;
+                        background-color: rgba(var(--rgb-card-background-color), 0.7);
+                      }
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+              reflow: true
+        view_layout:
+          grid-area: media
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Verlichting
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: custom:mushroom-light-card
+                entity: light.local_tuya_light_2
+                show_brightness_control: true
+                show_color_temp_control: false
+                show_color_control: false
+                collapsible_controls: true
+                tap_action:
+                  action: more-info
+                use_light_color: true
+                name: Side table
+                icon: mdi:lamp
+                double_tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
+                card_mod:
+                  style: |
+                    ha-card {
+                      {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
+                    }
+                    ha-card:active {
+                      transform: scale(0.95);
+                      transition: 0s;
+                    }
+              - type: custom:mushroom-light-card
+                entity: light.local_tuya_light_1
+                use_light_color: true
+                show_brightness_control: true
+                show_color_control: true
+                show_color_temp_control: false
+                primary_info: name
+                secondary_info: state
+                name: Voordeur
+                tap_action:
+                  action: more-info
+                hold_action:
+                  action: more-info
+                double_tap_action:
+                  action: toggle
+                collapsible_controls: true
+                icon: mdi:door
+                fill_container: false
+                card_mod:
+                  style: |
+                    ha-card {
+                      {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
+                    }
+                    ha-card:active {
+                      transform: scale(0.95);
+                      transition: 0s;
+                    }
+              - type: custom:mushroom-light-card
+                entity: light.local_tuya_light_3
+                icon_type: icon
+                use_light_color: true
+                show_brightness_control: true
+                show_color_control: false
+                show_color_temp_control: false
+                primary_info: name
+                secondary_info: state
+                name: Tuin
+                tap_action:
+                  action: more-info
+                hold_action:
+                  action: more-info
+                double_tap_action:
+                  action: toggle
+                collapsible_controls: true
+                icon: mdi:lightbulb-variant
+                fill_container: false
+                card_mod:
+                  style: |
+                    ha-card {
+                      {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
+                    }
+                    ha-card:active {
+                      transform: scale(0.95);
+                      transition: 0s;
+                    }
+              - type: conditional
+                conditions:
+                  - entity: automation.kerstmis_modus
+                    state: 'on'
+                card:
+                  type: custom:stack-in-card
+                  cards:
+                    - type: custom:mushroom-template-card
+                      entity: switch.local_tuya_plug_3
+                      primary: Kerstboom
+                      secondary: |-
+                        {% if is_state(entity, 'on') %}
+                          Aan
+                        {% elif is_state(entity, 'off') %}
+                          Uit
+                        {% else %}
+                          Niet beschikbaar
+                        {% endif %}
+                      icon: mdi:pine-tree
+                      icon_color: |-
+                        {% if is_state(entity, 'on') %}
+                          green
+                        {% else %}
+                          disabled
+                        {% endif %}
+                      tap_action:
+                        action: toggle
+                    - type: custom:mushroom-template-card
+                      icon: mdi:star-four-points
+                      entity: switch.local_tuya_plug_3
+                      icon_color: |-
+                        {% if is_state(entity, 'on') %}
+                          yellow
+                        {% else %}
+                          grey
+                        {% endif %}
+                      primary: Star
+                      card_mod:
+                        style:
+                          mushroom-shape-icon$: |
+                            ha-icon {
+                              --icon-animation: star 8s ease infinite alternate;
+                            }
+                            @keyframes star {
+                              0%, 100% { transform: translateY(-10px) rotate(0deg) scale(0.4); }
+                              50% { transform: translateY(-10px) rotate(360deg) scale(0.6); }
+                            }
+                            .shape {
+                              --shape-color: none;
+                            }
+                          .: |
+                            ha-card {
+                              width: 66px;
+                              top: -66px;
+                            }
+                    - type: custom:mushroom-template-card
+                      icon: mdi:grain
+                      icon_color: |-
+                        {% if is_state(entity, 'on') %}
+                          red
+                        {% else %}
+                          grey
+                        {% endif %}
+                      entity: switch.local_tuya_plug_3
+                      card_mod:
+                        style:
+                          mushroom-shape-icon$: |
+                            ha-icon {
+                              {{'--icon-animation: flash 2s steps(1) infinite, lights 2s infinite;' if is_state(config.entity, 'on')}}
+                              clip-path: polygon(51% 15%, 24% 74%, 74% 74%);
+                            }
+                            @keyframes flash {
+                              50% { transform: rotateY(180deg); }
+                            }
+                            @keyframes lights {
+                              0%, 100% {--icon-color: rgb(var(--rgb-red)); }
+                              6.25% { --icon-color: rgb(var(--rgb-deep-orange)); }
+                              12.5% { --icon-color: rgb(var(--rgb-orange)); }
+                              18.75% { --icon-color: rgb(var(--rgb-amber)); }
+                              25% { --icon-color: rgb(var(--rgb-yellow)); }
+                              31.25% { --icon-color: rgb(var(--rgb-lime)); }
+                              37.5% { --icon-color: rgb(var(--rgb-light-green)); }
+                              43.75% { --icon-color: rgb(var(--rgb-green)); }
+                              50% { --icon-color: rgb(var(--rgb-teal)); }
+                              56.25% { --icon-color: rgb(var(--rgb-cyan)); }
+                              62.5% { --icon-color: rgb(var(--rgb-light-blue)); }
+                              68.75% { --icon-color: rgb(var(--rgb-blue)); }
+                              75% { --icon-color: rgb(var(--rgb-indigo)); }
+                              81.25% { --icon-color: rgb(var(--rgb-deep-purple)); }
+                              87.5% { --icon-color: rgb(var(--rgb-purple)); }
+                              93.75% { --icon-color: rgb(var(--rgb-pink)); }
+                            }
+                            .shape {
+                              --shape-color: none;
+                            }
+                          .: |
+                            ha-card {
+                              width: 66px;
+                              top: -132px;
+                            }
+                    - type: custom:mushroom-template-card
+                      icon: mdi:gift
+                      icon_color: |-
+                        {% if is_state(entity, 'on') %}
+                          red
+                        {% else %}
+                          grey
+                        {% endif %}
+                      entity: switch.local_tuya_plug_3
+                      card_mod:
+                        style:
+                          mushroom-shape-icon$: |
+                            ha-icon {
+                              {{'--icon-animation: surprise 4s ease infinite;' if is_state(config.entity, 'on')}}
+                            }
+                            @keyframes surprise {
+                              0%, 20%, 100% { transform: translateY(0); }
+                              2.5% { transform: translateY(-2px) rotate(-27deg); }
+                              5% { transform: translateY(-2px) rotate(21deg); }
+                              7.5% { transform: translateY(-2px) rotate(-15deg); }
+                              10% { transform: translateY(-2px) rotate(9deg); }
+                              12.5% { transform: translateY(0); }
+                              15% { transform: translateY(-1.2px) }
+                            }
+                            .shape {
+                              --shape-color: none;
+                              --icon-size: 18px;
+                              top: 18px;
+                              left: 18px;
+                            }
+                          .: |
+                            ha-card {
+                              width: 66px;
+                              top: -198px;
+                            }
+                  card_mod:
+                    style: |
+                      ha-card {
+                        height: 66px;
+                        {{ 'background: rgba(var(--mush-rgb-green), 0.2);' if is_state('switch.local_tuya_plug_3', 'on') }}
+                      }
+                      ha-card:active {
+                        transform: scale(0.95);
+                        transition: 0s;
+                      }
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+              reflow: true
+          - type: custom:mushroom-title-card
+            title: Plugs
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: switch.local_tuya_plug_1
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: switch.local_tuya_plug_2
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: switch.local_tuya_plug_3
+              - type: custom:stack-in-card
+                keep:
+                  background: false
+                cards:
+                  - type: custom:decluttering-card
+                    template: plug_template
+                    variables:
+                      - entity: switch.local_tuya_plug_4
+                  - type: custom:layout-card
+                    layout_type: custom:grid-layout
+                    cards:
+                      - type: custom:button-card
+                        icon: mdi:minus
+                        tap_action:
+                          action: call-service
+                          service: input_number.decrement
+                          service_data:
+                            entity_id: input_number.plug_4_on_duration
+                          target:
+                            entity_id: input_number.plug_4_on_duration
+                        show_icon: true
+                        show_name: false
+                        styles:
+                          grid:
+                            - grid-template-areas: '"i"'
+                          card:
+                            - box-shadow: none
+                            - padding: 0px
+                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                            - border-radius: var(--mush-control-border-radius)
+                            - place-self: center
+                            - height: var(--mush-control-height)
+                          icon:
+                            - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                        size: 20px
+                        view_layout:
+                          grid-area: item1
+                      - type: custom:button-card
+                        entity: input_number.plug_4_on_duration
+                        name: '[[[ return Math.round(entity.state) ]]]'
+                        tap_action:
+                          action: more-info
+                        show_icon: false
+                        show_name: true
+                        styles:
+                          grid:
+                            - grid-template-areas: '"n"'
+                          card:
+                            - box-shadow: none
+                            - padding: 0px
+                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                            - border-radius: var(--mush-control-border-radius)
+                            - place-self: center
+                            - height: var(--mush-control-height)
+                          name:
+                            - font-size: 16px
+                        size: 20px
+                        view_layout:
+                          grid-area: item2
+                      - type: custom:button-card
+                        icon: mdi:plus
+                        tap_action:
+                          action: call-service
+                          service: input_number.increment
+                          service_data:
+                            entity_id: input_number.plug_4_on_duration
+                          target:
+                            entity_id: input_number.plug_4_on_duration
+                        show_icon: true
+                        show_name: false
+                        styles:
+                          grid:
+                            - grid-template-areas: '"i"'
+                          card:
+                            - box-shadow: none
+                            - padding: 0px
+                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                            - border-radius: var(--mush-control-border-radius)
+                            - place-self: center
+                            - height: var(--mush-control-height)
+                          icon:
+                            - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                        size: 20px
+                        view_layout:
+                          grid-area: item3
+                      - type: custom:button-card
+                        entity: automation.plug_4_auto_on_at_cheapest_electricity
+                        icon: mdi:creation
+                        tap_action:
+                          action: toggle
+                        show_icon: true
+                        show_name: false
+                        styles:
+                          grid:
+                            - grid-template-areas: '"i"'
+                          card:
+                            - box-shadow: none
+                            - padding: 0px
+                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                            - border-radius: var(--mush-control-border-radius)
+                            - place-self: center
+                            - height: var(--mush-control-height)
+                          icon:
+                            - color: rgba(var(--cstm-rgb-on-secondary),0.8)
+                        state:
+                          - value: 'on'
+                            styles:
+                              card:
+                                - background-color: rgba(var(--cstm-rgb-on), 0.8)
+                              icon:
+                                - color: rgb(var(--cstm-rgb-bottom-nav)
+                        size: 20px
+                        view_layout:
+                          grid-area: item4
+                      - type: custom:button-card
+                        entity: input_datetime.plug_4_auto_on
+                        name: |
+                          [[[ var start = entity.attributes.hour
+                              var end = states['input_datetime.plug_4_auto_off'].attributes.hour
+                              return start + 'u » ' + end + 'u']]]
+                        tap_action:
+                          action: more-info
+                        show_icon: false
+                        show_name: true
+                        styles:
+                          grid:
+                            - grid-template-areas: '"n"'
+                          card:
+                            - box-shadow: none
+                            - padding: 0px
+                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                            - border-radius: var(--mush-control-border-radius)
+                            - place-self: center
+                            - height: var(--mush-control-height)
+                          name:
+                            - font-size: 16px
+                        size: 20px
+                        view_layout:
+                          grid-area: item5
+                    layout:
+                      grid-template-columns: 1fr 1fr 1fr
+                      grid-template-rows: min-content min-content
+                      grid-template-areas: |
+                        "item1 item2 item3"
+                        "item4 item5 item5"
+                      gap: 0px
+                      margin: '-4px 8px 4px'
+                card_mod:
+                  style:
+                    mushroom-state-info$: |
+                      .primary {
+                        white-space: normal !important;
+                        overflow: hidden;
+                      }
+                    .: |
+                      ha-card {
+                        {% if is_state('switch.local_tuya_plug_4', 'on') %}
+                          background: var(--cstm-rgb-plug-on-background);
+                          --secondary-text-color: var(--primary-text-color);
+                        {% endif %}
+                      }
+              - type: custom:stack-in-card
+                keep:
+                  background: false
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: automation.plug_2_uit
+                    primary: Plug 2 uit
+                    secondary: >-
+                      {{state_attr('input_datetime.plug_2_s_avonds_uit',
+                      'timestamp') | timestamp_custom('%H:%M', local=false)}}
+                    icon: |-
+                      {% if is_state(entity, 'on') %}
+                        mdi:creation
+                      {% else %}
+                        mdi:creation-outline
+                      {% endif %}
+                    icon_color: |-
+                      {% if is_state(entity, 'on') %}
+                        var(--cstm-rgb-automation-on-icon)
+                      {% else %}
+                        disabled
+                      {% endif %}
+                    double_tap_action:
+                      action: call-service
+                      service: automation.toggle
+                      data: {}
+                      target:
+                        entity_id: automation.plug_2_uit
+                    tap_action:
+                      action: more-info
+                    badge_icon: |-
+                      {% if not is_state(entity, ['on', 'off']) %}
+                        mdi:help
+                      {% endif %}
+                    badge_color: orange
+                  - type: custom:layout-card
+                    layout_type: custom:grid-layout
+                    cards:
+                      - type: custom:button-card
+                        icon: mdi:minus
+                        tap_action:
+                          action: call-service
+                          service: script.decrement_plug_2_time
+                        show_icon: true
+                        show_name: false
+                        styles:
+                          card:
+                            - box-shadow: none
+                            - padding: 0px
+                            - background-color: rgba(var(--cstm-rgb-on-secondary), 0.05)
+                            - border-radius: var(--mush-control-border-radius)
+                            - place-self: center
+                            - height: var(--mush-control-height)
+                          icon:
+                            - color: var(--cstm-rgb-on-primary-text)
+                        size: 20px
+                        view_layout:
+                          grid-area: item1
+                      - type: custom:button-card
+                        icon: mdi:plus
+                        tap_action:
+                          action: call-service
+                          service: script.increment_plug_2_time
+                        show_icon: true
+                        show_name: false
+                        styles:
+                          card:
+                            - box-shadow: none
+                            - padding: 0px
+                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                            - border-radius: var(--mush-control-border-radius)
+                            - place-self: center
+                            - height: var(--mush-control-height)
+                          icon:
+                            - color: var(--cstm-rgb-on-primary-text)
+                        size: 20px
+                        view_layout:
+                          grid-area: item2
+                    layout:
+                      grid-template-columns: 1fr 1fr
+                      grid-template-rows: min-content
+                      grid-template-areas: |
+                        "item1 item2"
+                      gap: 0px
+                      margin: '-4px 8px 4px'
+                card_mod:
+                  style: |
+                    ha-card {
+                        {% if is_state('automation.plug_2_uit', 'on') %}
+                          background: var(--cstm-rgb-automation-on-background);
+                          --primary-text-color: rgb(var(--cstm-rgb-on-primary-text));
+                          --secondary-text-color: rgb(var(--cstm-rgb-on-secondary-text));
+                        {% endif %}
+                    }
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+        view_layout:
+          grid-area: lights
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Camera's
+          - type: conditional
+            conditions:
+              - entity: camera.camera
+                state_not: unavailable
+            card:
+              show_state: false
+              show_name: false
+              camera_view: auto
+              type: picture-entity
+              aspect_ratio: '16:9'
+              tap_action:
+                action: fire-dom-event
+                browser_mod:
+                  service: browser_mod.popup
+                  data:
+                    title: Camera
+                    content:
+                      type: entities
+                      entities:
+                        - entity: switch.camera_motion_alarm
+                        - entity: >-
+                            select.camera_motion_detection_sensitivity
+                        - entity: switch.camera_privacy_mode
+                        - entity: switch.camera_video_recording
+                        - entity: select.camera_record_mode
+                        - entity: siren.camera_siren
+                        - entity: switch.camera_sound_detection
+                        - entity: >-
+                            select.camera_sound_detection_sensitivity
+                        - entity: switch.camera_time_watermark
+                        - entity: select.camera_anti_flicker
+                        - entity: switch.camera_flip
+              entity: camera.camera
+        view_layout:
+          grid-area: cameras
+      - type: vertical-stack
+        cards:
+          - type: conditional
+            conditions:
+              - entity: sensor.epson
+                state_not: unavailable
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:mushroom-title-card
+                  title: Printer
+                  subtitle: ''
+                - type: custom:stack-in-card
+                  cards:
+                    - type: custom:layout-card
+                      layout_type: custom:grid-layout
+                      layout:
+                        grid-template-columns: auto 33px
+                        margin: '-4px -4px -8px -4px'
+                      cards:
+                        - type: custom:mushroom-template-card
+                          primary: Epson
+                          entity: sensor.epson
+                          secondary: >-
+                            {% if is_state('sensor.epson',
+                            'idle') %}  
+                              Aan • Inactief
+                            {% elif is_state('sensor.epson',
+                            'printing') %}   
+                              Aan • Printen...
+                            {% else %}
+                              Uit
+                            {% endif %}
+                          icon: mdi:printer
+                          icon_color: >-
+                            {{ "teal" if is_state(entity, "idle") or
+                            is_state(entity, "printing") else "disabled" }}
+                          tap_action:
+                            action: none
+                          hold_action:
+                            action: none
+                          card_mod:
+                            style: |
+                              ha-card {
+                                background: none;
+                                --ha-card-box-shadow: 0px;
+                              }
+                    - type: custom:bar-card
+                      direction: up
+                      entities:
+                        - color: MediumTurquoise
+                          entity: sensor.epson_cyan_ink
+                          name: C
+                        - color: Gold
+                          entity: sensor.epson_yellow_ink
+                          name: 'Y'
+                        - color: MediumOrchid
+                          entity: sensor.epson_magenta_ink
+                          name: M
+                        - color: rgb(var(--cstm-rgb-on))
+                          entity: sensor.epson_black_ink
+                          name: B
+                      height: 120px
+                      positions:
+                        icon: 'off'
+                        value: outside
+                        name: outside
+                      target: 20
+                      stack: horizontal
+                      card_mod:
+                        style: |
+                          ha-card {
+                            --bar-card-border-radius: var(--mush-control-border-radius);
+                            margin: -8px -2px -18px -2px;
+                            box-shadow: none;
+                          }
+                          bar-card-name {
+                            font-size: 12px;
+                          }
+                          bar-card-value {
+                            font-size: 11px
+                          }
+          - type: custom:mushroom-title-card
+            title: Apparaten
+          - square: false
+            columns: 2
+            type: grid
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.moto_g6_battery_level
+                primary: Moto G6
+                secondary: '{{ states(entity) }}%'
+                icon: >
+                  {% set battery_level = (states(entity) | int / 10) | round(0)
+                  | int * 10 %}
+
+                  {% if battery_level == 100 %}
+                    mdi:battery
+                  {% elif battery_level > 0 %}
+                    mdi:battery-{{ battery_level }}
+                  {% else %}
+                    mdi:battery-alert-variant-outline
+                  {% endif %}
+                icon_color: grey
+                layout: horizontal
+                tap_action:
+                  action: more-info
+                badge_color: blue
+                badge_icon: |-
+                  {% if is_state('binary_sensor.moto_g6_is_charging', 'on') %}
+                    mdi:lightning-bolt
+                  {% endif %}
+                card_mod:
+                  style: |
+                    mushroom-shape-icon {
+                      --shape-color: rgba(var(--cstm-rgb-on-secondary), 0.05) !important;
+                    }
+              - type: custom:mushroom-template-card
+                entity: sensor.ipad_air_3_battery_level
+                primary: iPad Air 3
+                secondary: '{{ states(entity) }}%'
+                icon: >
+                  {% set battery_level = (states(entity) | int / 10) | round(0)
+                  | int * 10 %}
+
+                  {% if battery_level == 100 %}
+                    mdi:battery
+                  {% elif battery_level > 0 %}
+                    mdi:battery-{{ battery_level }}
+                  {% else %}
+                    mdi:battery-alert-variant-outline
+                  {% endif %}
+                icon_color: grey
+                layout: horizontal
+                tap_action:
+                  action: more-info
+                badge_icon: >-
+                  {% if is_state('sensor.ipad_air_3_battery_state', 'Charging')
+                  %}
+                    mdi:lightning-bolt
+                  {% endif %}
+                badge_color: blue
+                card_mod:
+                  style: |
+                    mushroom-shape-icon {
+                      --shape-color: rgba(var(--cstm-rgb-on-secondary), 0.05) !important;
+                    }
+              - type: custom:mushroom-template-card
+                primary: iPhone 6s
+                secondary: '{{ states(entity) | round() }}%'
+                icon: >
+                  {% set battery_level = (states(entity) | int / 10) | round(0)
+                  | int * 10 %}
+
+                  {% if battery_level == 100 %}
+                    mdi:battery
+                  {% elif battery_level > 0 %}
+                    mdi:battery-{{ battery_level }}
+                  {% else %}
+                    mdi:battery-alert-variant-outline
+                  {% endif %}
+                icon_color: grey
+                layout: horizontal
+                tap_action:
+                  action: more-info
+                badge_color: blue
+                badge_icon: >-
+                  {% if is_state('sensor.iphone_137_battery_state', 'Charging')
+                  %}
+                    mdi:lightning-bolt
+                  {% endif %}
+                entity: sensor.iphone_137_battery_level
+                card_mod:
+                  style: |
+                    mushroom-shape-icon {
+                      --shape-color: rgba(var(--cstm-rgb-on-secondary), 0.05) !important;
+                    }
+              - type: custom:mushroom-template-card
+                primary: iPad Air 2
+                secondary: '{{ states(entity) | round() }}%'
+                icon: >
+                  {% set battery_level = (states(entity) | int / 10) | round(0)
+                  | int * 10 %}
+
+                  {% if battery_level == 100 %}
+                    mdi:battery
+                  {% elif battery_level > 0 %}
+                    mdi:battery-{{ battery_level }}
+                  {% else %}
+                    mdi:battery-alert-variant-outline
+                  {% endif %}
+                icon_color: grey
+                layout: horizontal
+                tap_action:
+                  action: more-info
+                badge_color: blue
+                badge_icon: >-
+                  {% if is_state('sensor.ipad_air_2_battery_state', 'Charging')
+                  %}
+                    mdi:lightning-bolt
+                  {% endif %}
+                entity: sensor.ipad_air_2_battery_level
+                card_mod:
+                  style: |
+                    mushroom-shape-icon {
+                      --shape-color: rgba(var(--cstm-rgb-on-secondary), 0.05) !important;
+                    }
+        view_layout:
+          grid-area: batteries

@@ -128,14 +128,15 @@ views:
         card:
           type: custom:mushroom-title-card
           title: |-
-            {% set time = now().hour %} {% if (time >= 18) %} 
-             Goedenavond, {{user}}
+            {% set time = now().hour %}
+            {% if (time >= 18) %} 
+              Good evening, {{user}}
             {% elif (time >= 12) %}
-             Goedemiddag, {{user}}
+              Good afternoon, {{user}}
             {% elif (time >= 5) %}
-             Goedemorgen {{user}}
+              Good morning, {{user}}
             {% else %}
-             Slaap lekker, {{user}}!
+              Sleep well, {{user}}!
             {% endif %}
           subtitle: Welcome to Adaptive Mushroom!
         card_mod:

@@ -1,0 +1,139 @@
+rick_roll:
+  alias: 'YouTube to Chromecast: rick-roll'
+  sequence:
+  - service: media_player.play_media
+    alias: Play rickroll video on Chromecast 4K
+    target:
+      entity_id: media_player.chromecast_4k
+    data:
+      media_content_type: cast
+      media_content_id: '{"app_name": "youtube", "media_id": "dQw4w9WgXcQ"}'
+    metadata: {}
+  mode: single
+
+increment_plug_2_time:
+  alias: Plug 2 time increment
+  sequence:
+  - service: input_datetime.set_datetime
+    alias: Increase value by 15 minutes
+    data:
+      time: '{{as_timestamp(as_datetime(state_attr("input_datetime.plug_2_s_avonds_uit","timestamp"))
+        + timedelta(minutes=15))| timestamp_custom("%H:%M", false) }}'
+    target:
+      entity_id: input_datetime.plug_2_s_avonds_uit
+  mode: single
+  icon: mdi:clock-plus
+
+decrement_plug_2_time:
+  alias: Plug 2 time decrement
+  sequence:
+  - service: input_datetime.set_datetime
+    alias: Decrease value by 15 minutes
+    data:
+      time: '{{ as_timestamp(as_datetime(state_attr("input_datetime.plug_2_s_avonds_uit","timestamp"))
+        + timedelta(minutes=-15))| timestamp_custom("%H:%M", false) }}'
+    target:
+      entity_id: input_datetime.plug_2_s_avonds_uit
+  mode: single
+  icon: mdi:clock-minus
+
+samsung_tv_volume_up:
+  alias: Samsung TV volume up
+  sequence:
+  - service: media_player.volume_set
+    alias: Increase volume level with 1
+    data:
+      volume_level: '{{ (state_attr("media_player.tv", "volume_level")|float
+        + 0.01) | round(2)}}'
+    target:
+      entity_id: media_player.tv
+  mode: single
+  icon: mdi:volume-plus
+
+samsung_tv_volume_down:
+  alias: Samsung TV volume down
+  sequence:
+  - if:
+    - condition: state
+      entity_id: media_player.tv
+      attribute: volume_level
+      state: 0
+    then:
+    - stop: Volume is al 0
+    else:
+    - service: media_player.volume_set
+      alias: Decrease volume level with 1
+      data:
+        volume_level: '{{ (state_attr("media_player.tv", "volume_level")|float
+          - 0.01) | round(2) }}'
+      target:
+        entity_id: media_player.tv
+  mode: single
+  icon: mdi:volume-minus
+
+samsung_tv_volume_mute:
+  alias: Samsung TV volume mute
+  sequence:
+  - if:
+    - condition: state
+      entity_id: media_player.tv
+      attribute: is_volume_muted
+      state: true
+    then:
+    - service: media_player.volume_mute
+      alias: Unmute
+      data:
+        is_volume_muted: false
+      target:
+        entity_id: media_player.tv
+    else:
+    - service: media_player.volume_mute
+      alias: Mute
+      data:
+        is_volume_muted: true
+      target:
+        entity_id: media_player.tv
+  mode: single
+  icon: mdi:volume-mute
+
+randomiseer_lampen_en_stekkers:
+  alias: 'Vacation mode: randomise lights and plugs'
+  sequence:
+  - parallel:
+    - repeat:
+        until:
+        - condition: time
+          after: '23:00:00'
+        sequence:
+        - delay:
+            hours: 0
+            minutes: 20
+            seconds: 0
+            milliseconds: 0
+        - service: light.turn_on
+          data: {}
+          target:
+            entity_id: light.local_tuya_light_2
+        - delay: 00:05:00
+        - service: light.turn_off
+          data: {}
+          target:
+            entity_id: light.local_tuya_light_2
+    - repeat:
+        until:
+        - condition: time
+          after: '23:00:00'
+        sequence:
+        - service: switch.turn_on
+          data: {}
+          target:
+            entity_id: switch.local_tuya_plug_1
+        - delay: '{{ range(25, 75) | random }}'
+        - service: switch.turn_off
+          data: {}
+          target:
+            entity_id: switch.local_tuya_plug_1
+        - delay: '{{ range(25*60, 30*60) | random }}'
+      enabled: true
+  mode: single
+  icon: mdi:lightbulb-auto
