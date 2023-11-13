@@ -175,6 +175,9 @@ You can always reorganize the `grid-area`s in your layout by editing the content
 
 The navigation menu will start working once you add more views. Remember to edit the decluttering templates of both navigation components (called `side-nav` and `bottom-nav`, editable through the `Raw configuration editor`) to suit your view names and icons.
 
+## Questions and comments
+Feel free to comment or share your adaptive mushroom dashboard with me on the [HA community forum](https://community.home-assistant.io/t/adaptive-mushroom/640308).
+
 ## ToDo's
 - [ ] Add more screenshots
 - [X] Add links to dependencies
