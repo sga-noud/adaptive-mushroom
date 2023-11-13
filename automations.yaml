@@ -1,0 +1,673 @@
+- alias: Melding voor RPi processor temperatuur
+  description: Warn if the RPi processor temperature is above 65ºC.
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.processor_temperature
+    above: 65
+  condition: []
+  action:
+  - repeat:
+      until:
+      - condition: numeric_state
+        entity_id: sensor.processor_temperature
+        below: 58
+      sequence:
+      - service: notify.mobile_app_moto_g6
+        data:
+          title: Raspberry Pi processor
+          message: Pas op, de processor zit op {{states(trigger_sensor_var)}}{{state_attr(trigger_sensor_var,
+            'unit_of_measurement')}}
+      - wait_for_trigger:
+        - platform: numeric_state
+          entity_id: sensor.processor_temperature
+          below: 58
+        timeout:
+          minutes: 60
+        continue_on_timeout: false
+      - service: notify.mobile_app_moto_g6
+        data:
+          title: Raspberry Pi processor
+          message: Weer op normaal niveau, {{states(trigger_sensor_var)}}{{state_attr(trigger_sensor_var,
+            'unit_of_measurement')}}
+  variables:
+    trigger_sensor_var: sensor.processor_temperature
+    trigger_level_high_var: 65
+    trigger_level_low_var: 60
+  mode: single
+
+
+- alias: Plug 2 auto-uit
+  description: Turn off Plug 2 at value of input_datetime.
+  trigger:
+  - platform: time
+    at: input_datetime.plug_2_s_avonds_uit
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+      - switch.local_tuya_plug_2
+  mode: single
+
+
+- alias: 'Vakantie modus: lampen'
+  description: 'Vacation mode: mimic someone being home by playing with the lights.'
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: 00:30:00
+  condition:
+  - condition: state
+    entity_id: input_boolean.vakantie_modus
+    state: 'on'
+  action:
+  - delay: '{{ range(0*60, 1*60) | random }}'
+  - service: light.turn_on
+    data: {}
+    target:
+      entity_id:
+      - light.local_tuya_light_1
+      - light.local_tuya_light_3
+  - if:
+    - condition: time
+      after: '21:40:00'
+    then:
+    - delay: 00:00:10
+    else:
+    - wait_for_trigger:
+      - platform: time
+        at: '21:40:00'
+      timeout:
+        hours: 3
+        minutes: 0
+        seconds: 0
+        milliseconds: 0
+    - delay: '{{ range(5, 19*60) | random }}'
+  - service: script.randomiseer_lampen_en_stekkers
+    data: {}
+  - if:
+    - condition: time
+      after: '23:10:00'
+    then:
+    - delay: '{{ range(25, 3*60) | random }}'
+    else:
+    - wait_for_trigger:
+      - platform: time
+        at: '23:10:00'
+      timeout:
+        hours: 1
+        minutes: 10
+        seconds: 0
+        milliseconds: 0
+    - delay: '{{ range(5, 3*60) | random }}'
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.local_tuya_plug_2
+  - delay: '{{ range(25, 8*60) | random }}'
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id:
+      - light.local_tuya_light_1
+      - light.local_tuya_light_3
+  - wait_for_trigger:
+    - platform: time
+      at: '23:30:00'
+    timeout: 00:15:00
+  - delay: '{{ range(5, 35) | random }}'
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+      - switch.local_tuya_plug_1
+      - switch.local_tuya_plug_3
+  - delay: '{{ range(50, 16*60) | random }}'
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.local_tuya_plug_2
+  mode: single
+
+
+- alias: Vakantie modus regelaar
+  description: "Turn 'vacation mode' automations on/off when input_boolean.vakantie_modus
+    changes and stays the same for 15s. \n\nCurrently active: \n- Lights\n- Plug 2"
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.vakantie_modus
+    id: Vakantie aan
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 15
+  - platform: state
+    entity_id:
+    - input_boolean.vakantie_modus
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 15
+    id: Vakantie uit
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: Vakantie aan
+      sequence:
+      - service: automation.turn_on
+        data: {}
+        target:
+          entity_id:
+          - automation.vakantie_modus_lampen
+      - service: automation.turn_off
+        data: {}
+        target:
+          entity_id: automation.plug_2_uit
+      - service: notify.notify
+        data:
+          title: Vakantiemodus ingeschakeld
+          message: Vergeet niet om Plug 2 te koppelen aan een lamp
+    - conditions:
+      - condition: trigger
+        id: Vakantie uit
+      sequence:
+      - service: automation.turn_off
+        data: {}
+        target:
+          entity_id:
+          - automation.vakantie_modus_lampen
+      - service: automation.turn_on
+        data: {}
+        target:
+          entity_id: automation.plug_2_uit
+      - service: notify.notify
+        data:
+          title: Vakantiemodus uitgeschakeld
+          message: Welkom thuis!
+    default: []
+  mode: single
+
+
+- id: '1665665742223'
+  alias: Melding voor weer van morgen
+  description: Notification for tomorrow's weather, using the Buienradar integration.
+  trigger:
+  - platform: time
+    at: '20:00:00'
+  condition: []
+  action:
+  - service: notify.mobile_app_moto_g6
+    data:
+      title: Weer van morgen
+      message: '{{states(''sensor.buienradar_temperature_1d'') | round()}} °C. {{
+        states(''sensor.buienradar_symbol_1d'') }}. {% if states(''sensor.buienradar_wind_force_1d'')
+        | int >= 7 %}Stormachtige wind van {{states(''sensor.buienradar_wind_force_1d'')}}
+        Bft. {%elif states(''sensor.buienradar_wind_force_1d'') | int >= 4%}{{states(''sensor.buienradar_wind_force_1d'')}}
+        Bft. {%elif states(''sensor.buienradar_wind_force_1d'') | int <= 3%}Bijna
+        windstil. {% endif %}'
+      data:
+        image: "{% set cloud = 100 - states(\"sensor.buienradar_sunchance_1d\")|int
+          %}\n{% set rain = states(\"sensor.buienradar_rain_1d\")|float %}\n{% set
+          entity = states(\"sensor.buienradar_detailed_condition_1d\") %}\n{% if entity
+          == \"exceptional\" %}\n{% set slug = \"isolated_scattered_tstorms_day\"
+          %}\n{% elif entity == \"fog\" %}\n{% set slug = \"haze_fog_dust_smoke\"
+          %}\n{% elif entity == \"hail\" %}\n{% set slug = \"wintry_mix_rain_snow\"
+          %}\n{% elif entity == \"lightning\" or entity == \"lightning-rainy\"%}\n{%
+          set slug = \"strong_tstorms\" %} \n{% elif entity == \"snowy\" %}\n{% set
+          slug = \"flurries\" %}\n{% elif entity == \"snowy-rainy\" %}\n{% set slug
+          = \"wintry_mix_rain_snow\" %}\n{% elif rain > 0.6 and rain <= 1.2 %}\n{%
+          set slug = \"drizzle\" %}\n{% elif rain > 1.2 and rain <= 6 %}\n{% set slug
+          = \"showers_rain\" %}\n{% elif rain > 6 %}\n{% set slug = \"heavy_rain\"
+          %}\n{% else %}  \n{% if cloud < 20 %}\n{% set slug = \"sunny\" %}\n{% elif
+          cloud < 40 %}\n{% set slug = \"mostly_sunny\" %}\n{% elif cloud < 60 %}\n{%
+          set slug = \"partly_cloudy\" %}\n{% elif cloud < 80 %}\n{% set slug = \"mostly_cloudy\"
+          %}\n{% elif cloud <= 100 %}\n{% set slug = \"cloudy\" %}\n{% else %} none
+          {% endif %} \n{% endif %}\nhttp://www.gstatic.com/images/icons/material/apps/weather/2x/{{slug}}_light_color_96dp.png"
+  mode: single
+
+
+- alias: Melding voor Avalex afvalophalingen
+  description: Check at 20:50 whether GFT or paper is collected the day after. 
+    If yes, send notification to take the garbage outside.
+  trigger:
+  - platform: time
+    at: '20:50:00'
+  condition:
+  - condition: or
+    conditions:
+    - condition: template
+      value_template: '{{ (now().date() + timedelta(days=1)) | string == (strptime(states(''sensor.afvalwijzer_gft''),
+        ''%d-%m-%Y'').date()) | string }}'
+    - condition: template
+      value_template: '{{ (now().date() + timedelta(days=1)) | string == (strptime(states(''sensor.afvalwijzer_papier''),
+        ''%d-%m-%Y'').date()) | string }}'
+  action:
+  - if:
+    - condition: template
+      value_template: '{{ (now().date() + timedelta(days=1)) | string == (strptime(states(''sensor.afvalwijzer_gft''),
+        ''%d-%m-%Y'').date()) | string }}'
+    then:
+    - service: notify.notify
+      data:
+        title: Groenbak
+        message: "{{ ['Morgen wordt de groenbak geleegd. Tijd om hem aan de straat
+          te zetten', \n    'Morgen komt de Avalex weer langs. Vergeet niet de groenbak
+          klaar te zetten',\n    'Kom van je luie reet af, de groenbak moet aan de
+          straat!'] | random() }}"
+    else: []
+  - if:
+    - condition: template
+      value_template: '{{ (now().date() + timedelta(days=1)) | string == (strptime(states(''sensor.afvalwijzer_papier''),
+        ''%d-%m-%Y'').date()) | string }}'
+    then:
+    - service: notify.notify
+      data:
+        message: Morgen wordt papier opgehaald
+        title: Papierbak
+  mode: single
+
+
+- alias: 'On share: YouTube'
+  description: 'When a YouTube link is being shared to HA, send a notification
+    to stream the video to Chromecast.
+
+
+    Only works for Android now, for device Moto G6.'
+  trigger:
+  - platform: event
+    event_type: mobile_app.share
+  condition:
+  - condition: or
+    conditions:
+    - condition: template
+      value_template: '{{ trigger.event.data.caller == "android-app://com.vanced.android.youtube"
+        }}'
+  action:
+  - service: notify.mobile_app_moto_g6
+    data:
+      title: YouTube streamen?
+      message: '{{trigger.event.data.subject}} TV'
+      data:
+        actions:
+        - action: '{{ ''STREAM:'' ~ (trigger.event.data.url).split("/")[-1] }}'
+          title: Streamen
+        - action: '{{ ''WACHTRIJ:'' ~ (trigger.event.data.url).split("/")[-1] }}'
+          title: Wachtrij
+        - action: URI
+          title: Open
+          uri: '{{trigger.event.data.url}}'
+  - wait_for_trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ ''STREAM:'' ~ (trigger.event.data.url).split("/")[-1] }}'
+      id: streamen
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ ''WACHTRIJ:'' ~ (trigger.event.data.url).split("/")[-1] }}'
+      id: wachtrij
+    continue_on_timeout: false
+    timeout: 00:03:00
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ wait.trigger.id == ''streamen'' }}'
+      sequence:
+      - service: media_player.play_media
+        target:
+          entity_id: media_player.chromecast_4k
+        data:
+          media_content_type: cast
+          media_content_id: ' { "app_name": "youtube", "media_id": "{{(trigger.event.data.url).split("/")[-1]}}"
+            }'
+        metadata: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ wait.trigger.id == ''wachtrij'' }}'
+      sequence:
+      - service: media_player.play_media
+        target:
+          entity_id: media_player.chromecast_4k
+        data:
+          media_content_type: cast
+          media_content_id: ' { "app_name": "youtube", "media_id": "{{(trigger.event.data.url).split("/")[-1]}}",
+            "enqueue": true }'
+        metadata: {}
+    default: []
+  mode: single
+
+
+- alias: Filmmodus regelaar
+  description: When pausing a film, turn the light on. When starting the film again,
+    turn the light back off.
+  trigger:
+  - platform: state
+    entity_id:
+    - media_player.chromecast
+    to: playing
+    from:
+    - 'off'
+    - idle
+    - buffering
+    id: start
+  - platform: device
+    device_id: 12345678901234567890
+    domain: media_player
+    entity_id: media_player.chromecast
+    type: playing
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 6
+    id: start
+    enabled: false
+  - platform: state
+    entity_id:
+    - media_player.chromecast
+    from: playing
+    to: paused
+    id: pause
+  - platform: state
+    entity_id:
+    - media_player.chromecast
+    from: paused
+    to: playing
+    id: resume
+  - platform: state
+    entity_id:
+    - media_player.chromecast
+    from:
+    - playing
+    - paused
+    - idle
+    to:
+    - idle
+    - 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
+    id: stop
+  condition:
+  - condition: template
+    value_template: '{{ state_attr(''media_player.chromecast'', ''app_name'') == "Pathé
+      Thuis" or state_attr(''media_player.chromecast'', ''app_name'') == "CINEMEMBER"
+      or state_attr(''media_player.chromecast'', ''app_name'') == "Netflix" or (state_attr(''media_player.chromecast'',
+      ''app_name'') == "Perseus_Prod_Ziggo_NL" and state_attr(''media_player.chromecast'',
+      ''media_content_type'') == "movie") }}'
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: start
+      - condition: state
+        entity_id: input_boolean.filmmodus
+        state: 'off'
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.filmmodus
+      - service: notify.notify
+        data:
+          title: Filmmodus ingeschakeld
+          message: Veel plezier met kijken naar {{state_attr("media_player.chromecast",
+            "media_title")}}
+    - conditions:
+      - condition: trigger
+        id: stop
+      - condition: state
+        entity_id: input_boolean.filmmodus
+        state: 'on'
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.filmmodus
+      - service: notify.notify
+        data:
+          title: Filmmodus uitgeschakeld
+          message: Hopelijk heb je genoten van {{state_attr("media_player.chromecast",
+            "media_title")}}
+    - conditions:
+      - condition: trigger
+        id: pause
+      - condition: state
+        entity_id: input_boolean.filmmodus
+        state: 'on'
+        for:
+          hours: 0
+          minutes: 10
+          seconds: 0
+      sequence:
+      - service: light.turn_on
+        data:
+          transition: 3
+          brightness_pct: 1
+          color_temp: 414
+        target:
+          entity_id: light.local_tuya_light_2
+    - conditions:
+      - condition: trigger
+        id: resume
+      - condition: state
+        entity_id: input_boolean.filmmodus
+        state: 'on'
+      sequence:
+      - service: light.turn_off
+        data:
+          transition: 3
+        target:
+          entity_id: light.local_tuya_light_2
+  mode: single
+
+
+- alias: 'Plug 4: set on and off time'
+  description: Set input_datetime for on/off Plug 4, based on cheapest energy period.
+  trigger:
+  - platform: time
+    at: '22:00:10'
+  - platform: state
+    entity_id:
+    - input_number.plug_4_on_duration
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: sensor.plug_4_cheapest_energy_period
+      state: unknown
+    then:
+    - service: input_datetime.set_datetime
+      data:
+        datetime: "{% set numberOfSequentialHours = states(\"input_number.plug_4_on_duration\")
+          | int %}\n{%- set lastHour = 24 -%} {%- set firstHour = 0 -%} \n{%- set
+          sensor = \"sensor.zonneplan_current_electricity_tariff\" -%}\n{# filter
+          forecast items from today only with now().isoweekday() #} {%- set ls = namespace(list=[])
+          -%} {%- for h in state_attr(sensor, \"forecast\") -%}\n  {%- if now().isoweekday()
+          == as_timestamp(h.datetime) | timestamp_custom('%w') | int -%}\n    {%-
+          set ls.list = ls.list + [h] -%}\n  {%- endif -%}\n{%- endfor -%}\n{%- set
+          ns = namespace(counter=0, list=[], cheapestHour=today_at(\"00:00\"), cheapestPrice=999.00)
+          -%}\n{%- for i in range(firstHour + numberOfSequentialHours, lastHour+1)
+          -%}\n  {%- set ns.counter = 0.0 -%}\n  {%- for j in range(i-numberOfSequentialHours,
+          i) -%}\n    {%- set ns.counter = ns.counter + (ls.list[j].electricity_price
+          / 100000) -%}\n  {%- endfor -%}\n  {%- set ns.list = ns.list + [ns.counter]
+          -%}\n  {%- if ns.counter < ns.cheapestPrice -%}\n    {%- set ns.cheapestPrice
+          = ns.counter -%}\n    {%- set ns.cheapestHour = today_at(\"00:00\") + timedelta(hours=(i
+          - numberOfSequentialHours)) -%}\n  {%- endif -%}\n{%- endfor -%}\n{{ as_timestamp(ns.cheapestHour)
+          | timestamp_local() }}"
+      target:
+        entity_id: input_datetime.plug_4_auto_on
+    - service: input_datetime.set_datetime
+      data:
+        datetime: '{{ as_local( (states(''input_datetime.plug_4_auto_on'')| as_timestamp
+          + (states(''input_number.plug_4_on_duration'') | int *3600)) | as_datetime
+          )}}'
+      target:
+        entity_id: input_datetime.plug_4_auto_off
+    else:
+    - service: input_datetime.set_datetime
+      data:
+        datetime: '{{ states(''sensor.plug_4_cheapest_energy_period'') }}'
+      target:
+        entity_id: input_datetime.plug_4_auto_on
+    - service: input_datetime.set_datetime
+      data:
+        datetime: '{{ as_local( (states(''input_datetime.plug_4_auto_on'') | as_timestamp
+          + (states(''input_number.plug_4_on_duration'') | int *3600)) | as_datetime
+          )}}'
+      target:
+        entity_id: input_datetime.plug_4_auto_off
+  mode: single
+
+
+- alias: Plug 4 auto-on at cheapest electricity
+  description: Turn on/off Plug 4 based on value of input_datetime.
+  trigger:
+  - platform: time
+    at: input_datetime.plug_4_auto_on
+    id: Aan
+  - platform: time
+    at: input_datetime.plug_4_auto_off
+    id: Uit
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: Aan
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.local_tuya_plug_4
+      - service: notify.notify
+        data:
+          message: Fietslader aan
+    - conditions:
+      - condition: trigger
+        id: Uit
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.local_tuya_plug_4
+      - service: notify.notify
+        data:
+          message: Fietslader uit
+  mode: single
+
+
+- alias: Melding voor energieprijzen morgen
+  description: When tomorrows energy prices are available, send a notification.
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.nordpool_kwh_nl_eur
+    attribute: tomorrow_valid
+    to:
+    - true
+    - 'true'
+  condition: []
+  action:
+  - variables:
+      today: "{% set ns = namespace(lowest_price=99, lowest_hour='00:00') %} {% for
+        hour in state_attr('sensor.zonneplan_current_electricity_tariff', 'forecast')
+        %} {%- if (now().date() + timedelta(days=0)) | string == (as_timestamp(hour.datetime)
+        | timestamp_custom('%Y-%m-%d', local=true)) -%} {% set price = hour.electricity_price
+        / 10000000 %} {% if price < ns.lowest_price %}\n  {% set ns.lowest_price =
+        price %}\n  {% set ns.lowest_hour = (as_timestamp(hour.datetime) | timestamp_custom('%H:%M',
+        local=true)) %}\n{% endif %} {%- endif -%} {% endfor %} Laagste prijs vandaag:
+        € {{ ns.lowest_price | round(3) }} om {{ns.lowest_hour}}"
+      tomorrow: "{% set ns = namespace(lowest_price=99, lowest_hour='00:00') %} {%
+        for hour in state_attr('sensor.zonneplan_current_electricity_tariff', 'forecast')
+        %} {%- if (now().date() + timedelta(days=1)) | string == (as_timestamp(hour.datetime)
+        | timestamp_custom('%Y-%m-%d', local=true)) -%} {% set price = hour.electricity_price
+        / 10000000 %} {% if price < ns.lowest_price %}\n  {% set ns.lowest_price =
+        price %}\n  {% set ns.lowest_hour = (as_timestamp(hour.datetime) | timestamp_custom('%H:%M',
+        local=true)) %}\n{% endif %} {%- endif -%} {% endfor %} Laagste prijs morgen:
+        € {{ ns.lowest_price | round(3) }} om {{ns.lowest_hour}}"
+  - service: notify.notify
+    data:
+      title: Energietarieven bekend
+      message: 'Huidige prijs: €{{ states(''sensor.zonneplan_current_electricity_tariff'')
+        | round(3) }}
+
+        {{ today }}
+
+        {{ tomorrow }}
+
+        '
+  mode: single
+
+
+- alias: Plant spraakassistent
+  description: When I say I've watered the plant, reset the input_datetime.
+  trigger:
+  - platform: conversation
+    command: Ik heb de plant water gegeven
+  condition: []
+  action:
+  - service: input_datetime.set_datetime
+    data:
+      date: '{{ now().strftime(''%Y-%m-%d'') }}'
+    target:
+      entity_id: input_datetime.plant_water
+  mode: single
+
+
+- alias: Melding voor lampen uit bij bedtijd
+  description: When there are still lights on at 23:45, send an actionable notification
+  trigger:
+  - platform: time
+    at: '23:45:00'
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: light.local_tuya_light_1
+      state: 'on'
+    - condition: state
+      entity_id: light.local_tuya_light_2
+      state: 'on'
+    - condition: state
+      entity_id: light.local_tuya_light_3
+      state: 'on'
+  action:
+  - variables:
+      action_turn_off_lights: '{{ ''LIGHTS_OFF_'' ~ context.id }}'
+  - service: notify.notify
+    data:
+      title: Er zijn nog lampen aan
+      message: Het is bijna bedtijd, maar er zijn nog lampen aan. Wil je alles uitdoen?
+      data:
+        actions:
+        - action: '{{ action_turn_off_lights }}'
+          title: Alles uit
+  - alias: Wait for a response
+    wait_for_trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ action_turn_off_lights }}'
+  - choose:
+    - conditions: '{{ wait.trigger.event.data.action == action_turn_off_lights }}'
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id:
+          - light.local_tuya_light_1
+          - light.local_tuya_light_2
+          - light.local_tuya_light_3
+  mode: restart

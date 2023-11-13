@@ -323,6 +323,12 @@ decluttering_templates:
                 :host {
                   --mush-icon-border-radius: 16px;
                 }
+      card_mod:
+        style: |
+          ha-card {
+            background: rgb(var(--cstm-rgb-bottom-nav));
+            box-shadow: none;
+          }
   weather_now_template:
     card:
       type: custom:mushroom-template-card
@@ -682,7 +688,7 @@ views:
 
             {% else %}
 
-            Welkom bij je Home Assistent
+            Welkom bij je Home Assistant
 
             {% endif%}
         card_mod:
@@ -928,6 +934,77 @@ views:
                     background-blend-mode: overlay;
                     background-color: rgba(var(--rgb-card-background-color), 0.7);
                   }
+          - type: conditional
+            conditions:
+              - entity: sensor.epson
+                state_not: unavailable
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:mushroom-title-card
+                  title: Printer
+                  subtitle: ''
+                - type: custom:stack-in-card
+                  cards:
+                    - type: custom:mushroom-template-card
+                      primary: Epson
+                      entity: sensor.epson
+                      secondary: >-
+                        {% if is_state('sensor.epson', 'idle')
+                        %}  
+                          Aan • Inactief
+                        {% elif is_state('sensor.epson',
+                        'printing') %}   
+                          Aan • Printen...
+                        {% elif is_state('sensor.epson',
+                        'stopped') %}   
+                          Aan • Gestopt
+                        {% else %}
+                          Uit
+                        {% endif %}
+                      icon: mdi:printer
+                      icon_color: >-
+                        {{ "teal" if is_state(entity, "idle") or
+                        is_state(entity, "printing") else "disabled" }}
+                      tap_action:
+                        action: more-info
+                      hold_action:
+                        action: none
+                      card_mod:
+                        style: |
+                          ha-card {
+                           background: none;
+                            --ha-card-box-shadow: 0px;
+                          }
+                    - type: custom:bar-card
+                      direction: right
+                      entities:
+                        - color: MediumTurquoise
+                          entity: sensor.epson_cyan_ink
+                          name: C
+                        - color: Gold
+                          entity: sensor.epson_yellow_ink
+                          name: 'Y'
+                        - color: MediumOrchid
+                          entity: sensor.epson_magenta_ink
+                          name: M
+                        - color: rgb(var(--cstm-rgb-on))
+                          entity: sensor.epson_black_ink
+                          name: B
+                      height: 8px
+                      positions:
+                        icon: 'off'
+                        value: 'off'
+                        name: 'off'
+                      target: 0
+                      stack: vertical
+                      card_mod:
+                        style: |
+                          ha-card {
+                            --bar-card-border-radius: 30px;
+                            margin: -12px -2px -8px -2px;
+                            box-shadow: none;
+                          }
           - type: custom:mushroom-title-card
             title: Favorieten
           - type: conditional
@@ -1623,23 +1700,17 @@ views:
           - type: custom:mushroom-title-card
             title: Energie
             subtitle: ''
-          - type: horizontal-stack
-            cards:
-              - type: custom:mushroom-template-card
-                entity: sensor.zonneplan_current_usage
-                primary: 'Nu: {{states(entity)}} W'
-                secondary: >-
-                  {{states("sensor.zonneplan_p1_electricity_consumption_today")}}
-                  W vandaag
-                icon_color: orange
-                icon: mdi:lightning-bolt
-              - type: custom:mushroom-entity-card
-                entity: sensor.zonneplan_sustainability_score
-                icon: mdi:leaf
-                icon_color: green
-                primary_info: state
-                secondary_info: name
-                name: Groene energie
+          - type: custom:mushroom-template-card
+            entity: sensor.zonneplan_current_usage
+            primary: 'Nu: {{states(entity)}} W'
+            secondary: >-
+              Totaal verbruik vandaag:
+              {{states("sensor.zonneplan_p1_electricity_consumption_today")}}
+              kWh
+            icon_color: orange
+            icon: mdi:lightning-bolt
+            tap_action:
+              action: more-info
           - type: custom:stack-in-card
             cards:
               - type: custom:mushroom-template-card
@@ -1674,11 +1745,25 @@ views:
                         .map((item) => {
                           return [item.datetime, item.electricity_price / 10000000];
                         });
+                apex_config:
+                  chart:
+                    height: 164px
+                    fontFamily: SF Pro, Roboto, system-ui
                 yaxis:
                   - decimals: 2
-                    min: -0.05
+                    min: ~0
                     apex_config:
-                      tickAmount: 7
+                      tickAmount: 4
+                      labels:
+                        formatter: |
+                          EVAL:function(value, index) {
+                            return value.toFixed(2);
+                          }
+                card_mod:
+                  style: |
+                    ha-card {
+                      margin: -16px 0px 0px 0px;
+                    }
           - type: custom:stack-in-card
             cards:
               - type: custom:mushroom-template-card
@@ -1686,7 +1771,7 @@ views:
                   {{states("sensor.zonneplan_current_gas_tariff") | round(3)}}
                   €/m³
                 secondary: >-
-                  Gasprijs. Totaal vandaag:
+                  Gasprijs. Totaal gas verbruikt:
                   {{states("sensor.zonneplan_p1_gas_consumption_today")}} m³
                 icon: mdi:meter-gas
                 entity: sensor.zonneplan_current_gas_tariff
@@ -2323,7 +2408,6 @@ views:
               position: -webkit-sticky;
               bottom: 0;
             }
-
             ha-card {    
               background: rgb(var(--cstm-rgb-bottom-nav));
               box-shadow: none;
@@ -3569,41 +3653,38 @@ views:
                   subtitle: ''
                 - type: custom:stack-in-card
                   cards:
-                    - type: custom:layout-card
-                      layout_type: custom:grid-layout
-                      layout:
-                        grid-template-columns: auto 33px
-                        margin: '-4px -4px -8px -4px'
-                      cards:
-                        - type: custom:mushroom-template-card
-                          primary: Epson
-                          entity: sensor.epson
-                          secondary: >-
-                            {% if is_state('sensor.epson',
-                            'idle') %}  
-                              Aan • Inactief
-                            {% elif is_state('sensor.epson',
-                            'printing') %}   
-                              Aan • Printen...
-                            {% else %}
-                              Uit
-                            {% endif %}
-                          icon: mdi:printer
-                          icon_color: >-
-                            {{ "teal" if is_state(entity, "idle") or
-                            is_state(entity, "printing") else "disabled" }}
-                          tap_action:
-                            action: none
-                          hold_action:
-                            action: none
-                          card_mod:
-                            style: |
-                              ha-card {
-                                background: none;
-                                --ha-card-box-shadow: 0px;
-                              }
+                    - type: custom:mushroom-template-card
+                      primary: Epson WF2540
+                      entity: sensor.epson
+                      secondary: >-
+                        {% if is_state('sensor.epson', 'idle')
+                        %}  
+                          Aan • Inactief
+                        {% elif is_state('sensor.epson',
+                        'printing') %}   
+                          Aan • Printen...
+                        {% elif is_state('sensor.epson',
+                        'stopped') %}   
+                          Aan • Gestopt
+                        {% else %}
+                          Uit
+                        {% endif %}
+                      icon: mdi:printer
+                      icon_color: >-
+                        {{ "teal" if is_state(entity, "idle") or
+                        is_state(entity, "printing") else "disabled" }}
+                      tap_action:
+                        action: more-info
+                      hold_action:
+                        action: none
+                      card_mod:
+                        style: |
+                          ha-card {
+                           background: none;
+                            --ha-card-box-shadow: 0px;
+                          }
                     - type: custom:bar-card
-                      direction: up
+                      direction: right
                       entities:
                         - color: MediumTurquoise
                           entity: sensor.epson_cyan_ink
@@ -3612,30 +3693,24 @@ views:
                           entity: sensor.epson_yellow_ink
                           name: 'Y'
                         - color: MediumOrchid
-                          entity: sensor.epson_magenta_ink
+                          entity: sensor.epson
                           name: M
                         - color: rgb(var(--cstm-rgb-on))
                           entity: sensor.epson_black_ink
                           name: B
-                      height: 120px
+                      height: 8px
                       positions:
                         icon: 'off'
-                        value: outside
-                        name: outside
-                      target: 20
-                      stack: horizontal
+                        value: 'off'
+                        name: 'off'
+                      target: 0
+                      stack: vertical
                       card_mod:
                         style: |
                           ha-card {
-                            --bar-card-border-radius: var(--mush-control-border-radius);
-                            margin: -8px -2px -18px -2px;
+                            --bar-card-border-radius: 30px;
+                            margin: -12px -2px -8px -2px;
                             box-shadow: none;
-                          }
-                          bar-card-name {
-                            font-size: 12px;
-                          }
-                          bar-card-value {
-                            font-size: 11px
                           }
           - type: custom:mushroom-title-card
             title: Apparaten
