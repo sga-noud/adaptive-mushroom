@@ -26,7 +26,7 @@ Dependency | Mandatory | Use-case |
 [browser-mod](https://github.com/thomasloven/hass-browser_mod) | no | For displaying popus |
 
 ### 2. Installing the theme
-The theme defines the dashboard appearance and some variables necessary for light/dark mode. To make sure my theme is not overwritten by a Mushroom update, I put the file in a separate folder in the `themes` directory called `Adaptive Mushroom` next to the `Mushroom` folder that is already there if you're using that theme.
+The theme defines the dashboard appearance and some variables necessary for light/dark mode. To make sure my theme is not overwritten by a Mushroom update, I put the file in a separate folder in the `themes` directory called `Adaptive Mushroom`, next to the `Mushroom` folder that is already there if you're using that theme.
 1. Copy the `themes/adaptive-mushroom` folder to your Home Assistant `themes` directory.
 2. Add the following lines to your `configuration.yaml`:
 ```yaml
@@ -34,7 +34,7 @@ frontend:
   themes: !include_dir_merge_named themes
 ```
 3. Restart Home Assistant.
-4. After restarting, go to your profile and select the Adaptive Mushroom theme from the drop-down menu.
+4. After restarting, go to your profile and select the `Adaptive Mushroom` theme from the drop-down menu.
 
 *You can also change your original Mushroom theme if you have it installed already, but I'm not sure if it remains untouched inbetween Mushroom updates. Don't forget to refresh your theme with the `frontend.reload_themes` service.*
 
@@ -155,11 +155,11 @@ views:
               }
 ```
 8. Click on `Save` and then `X`. If you left in comments, they won't be saved, but that's ok.
-9. You should now have a title and a navigation menu on the left of the screen for tablet/desktop and on the bottom of the screen for mobile (please note that the bottom navigation footer needs more content to stay at the bottom of the page).
+9. You should now have a title and a navigation menu on the left of the screen for tablet/desktop and on the bottom of the screen for mobile. *Please note that the bottom navigation footer needs more content to stay at the bottom of the page.*
 10. Edit the view in the UI to change its visibility.
 
 ### 4. Configuring the other cards and views
-Now it's time to start adding cards to your dashboard as you wish! I find it easiest to use vertical stacks to organize my layout. To place them in a specific area of the layout, add the following code to a vertical stack (or any card):
+Now it's time to start adding cards to your dashboard as you wish! I find it easiest to use vertical stacks to organize my layout. To place them in a specific `grid-area` of the layout, add the following code to a vertical stack (or any card):
 ```yaml
 type: vertical-stack
 cards:
@@ -167,15 +167,16 @@ cards:
 view_layout:
   grid-area: YOUR_AREA_NAME_HERE
 ```
-You can always reorganize the areas in your layout by editing the content of the `custom:grid-layout` card that is at the base of the dashboard view.
+You can always reorganize the `grid-area`s in your layout by editing the content of the `custom:grid-layout` card that is at the base of the dashboard view.
 
-The navigation menu will start working once you add more views. Remember to change the decluttering templates of both navigation components (called `side-nav` and `bottom-nav`) to suit your view names and icons.
+The navigation menu will start working once you add more views. Remember to edit the decluttering templates of both navigation components (called `side-nav` and `bottom-nav`, editable through the `Raw configuration editor`) to suit your view names and icons.
 
 ## ToDo's
 - [ ] Add screenshots
 - [X] Add links to dependencies
 - [ ] Confirm installation steps are correct
 - [ ] Add lovelace.yaml of other views
+- [X] Add automations.yaml
 
 ## License
 Copyright © 2023 SGA-Noud
