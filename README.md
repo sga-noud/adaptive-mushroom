@@ -3,7 +3,9 @@ A minimalistic Mushroom-based dashboard for Home Assistant. No more need to main
 
 [![Buy me a beer](https://img.shields.io/badge/Buy%20me%20a-beer-yellow?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/sganoud)
 
-![Home screen, tablet, light/dark mode](https://github.com/sga-noud/adaptive-mushroom/assets/108803620/cb1b4523-61f5-443f-aecd-333ea01d527e)
+![Tablet home screen, light/dark mode](https://github.com/sga-noud/adaptive-mushroom/assets/108803620/cb1b4523-61f5-443f-aecd-333ea01d527e)
+
+![Mobile](https://github.com/sga-noud/adaptive-mushroom/assets/108803620/dc5a1687-9ab0-4eb6-a603-49df856e83b0)
 
 Adaptive Mushroom is heavily inspired by [7ahang's work](https://www.behance.net/gallery/88433905/Redesign-Smart-Home) on Behance, so be sure to check that out!
 
