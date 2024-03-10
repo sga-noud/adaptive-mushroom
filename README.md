@@ -13,7 +13,7 @@ Adaptive Mushroom is heavily inspired by [7ahang's work](https://www.behance.net
 ### 1. Installing dependencies
 You will need to install the following frontend dependencies (using HACS or manually). Some are required for the adaptive layout to work properly, others are used only for specific cards in my personal dashboard. If you want to use some of my custom cards you will likely need button-card, for example.
 
-Dependency | Mandatory | Use-case |
+Dependency | Required | Use-case |
 --- | --- | --- |
 [layout-card](https://github.com/thomasloven/lovelace-layout-card) | yes | Determines the layout |
 [mushroom](https://github.com/piitaya/lovelace-mushroom) | yes | For the basic cards |
@@ -43,6 +43,7 @@ frontend:
 *You can also change your original Mushroom theme if you have it installed already, but I'm not sure if it remains untouched inbetween Mushroom updates. Don't forget to refresh your theme with the `frontend.reload_themes` service.*
 
 ### 3. Configuring a new dashboard
+*Below steps were written for HA OS 2023.7, they might differ a little depending on your OS version. Adaptive Mushroom is compatible with 2024.2.*
 1. Create a new dashboard and visit it.
 2. Click on the 3 dots in the top right corner and hit `Edit dashboard`, confirm that you'll take control and check the box to start with an empty dashboard.
 3. Click the 3 dots again, `Edit dashboard` and then `Raw configuration editor`.
@@ -68,7 +69,7 @@ views:
         ". nav left1 center1 right1 ."
         ". nav left2 center2 right2 ."
       mediaquery:
-        '(max-width: 400px)':
+        '(max-width: 600px)':
           grid-template-columns: 3% 94% 3%
           grid-template-rows: auto
           grid-gap: 0em
@@ -92,11 +93,11 @@ views:
             template: side-nav
             variables:
               - dashboard-name: dashboard-view  # Edit to your dashboard URL
-              - active-view: home  # Edit to the active dashboard view
+              - active-view: home  # Edit to the active dashboard view name
         view_layout:
           grid-area: nav
           show:
-            mediaquery: '(min-width: 400px)'
+            mediaquery: '(min-width: 600px)'
       - type: custom:stack-in-card
         mode: horizontal
         cards:
@@ -104,11 +105,11 @@ views:
             template: bottom-nav
             variables:
               - dashboard-name: dashboard-view  # Edit to your dashboard URL
-              - active-view: home  # Edit to the active dashboard view
+              - active-view: home  # Edit to the active dashboard view name
+        # The sticky position doesn't work with Decluttering card, so you have to add the CSS here
+        # If you don't use the UI you can use YAML anchors instead
         card_mod:
           style: |
-            # The sticky position doesn't work with Decluttering card, so you have to add the CSS here
-            # If you don't use the UI you can use YAML anchors instead
             :host {
               z-index: 4;
               position: sticky !important;
@@ -125,7 +126,7 @@ views:
         view_layout:
           grid-area: footer
           show:
-            mediaquery: '(max-width: 400px)'
+            mediaquery: '(max-width: 600px)'
       - type: custom:mod-card
         view_layout:
           grid-area: title
@@ -140,7 +141,7 @@ views:
             {% elif (time >= 5) %}
               Good morning, {{user}}
             {% else %}
-              Sleep well, {{user}}!
+              Sleep well, {{user}}
             {% endif %}
           subtitle: Welcome to Adaptive Mushroom!
         card_mod:
@@ -159,7 +160,7 @@ views:
               }
 ```
 8. Click on `Save` and then `X`. If you left in comments, they won't be saved, but that's ok.
-9. You should now have a title and a navigation menu on the left of the screen for tablet/desktop and on the bottom of the screen for mobile. *Please note that the bottom navigation footer needs more content to stay at the bottom of the page.*
+9. You should now have a title and a navigation menu on the left of the screen for tablet/desktop and on the bottom of the screen for mobile. *Please note that the bottom navigation footer needs more content to stay at the bottom of the page. If necessary, you can add a gap-card to 'simulate enough height' for the sticky footer to work.*
 10. Edit the view in the UI to change its visibility.
 
 ### 4. Configuring the other cards and views
@@ -171,7 +172,7 @@ cards:
 view_layout:
   grid-area: YOUR_AREA_NAME_HERE
 ```
-You can always reorganize the `grid-area`s in your layout by editing the content of the `custom:grid-layout` card that is at the base of the dashboard view.
+You can always reorganize the `grid-area`'s in your layout by editing the content of the `custom:grid-layout` card that is at the base of the dashboard view.
 
 The navigation menu will start working once you add more views. Remember to edit the decluttering templates of both navigation components (called `side-nav` and `bottom-nav`, editable through the `Raw configuration editor`) to suit your view names and icons.
 
@@ -181,7 +182,7 @@ Feel free to comment or share your adaptive mushroom dashboard with me on the [H
 ## ToDo's
 - [ ] Add more screenshots
 - [X] Add links to dependencies
-- [ ] Confirm installation steps are correct
+- [X] Confirm installation steps are correct
 - [ ] Add lovelace.yaml of other views
 - [X] Add automations.yaml
 

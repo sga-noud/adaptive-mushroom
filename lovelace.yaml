@@ -396,8 +396,8 @@ decluttering_templates:
           ha-card {
             background: none;
             box-shadow: none;
-             --primary-text-color: rgb(240,240,240);
-             --secondary-text-color: rgb(220,220,220);
+             --card-primary-color: rgb(240,240,240);  # In previous HA OS versions, this was '--primary-text-color'
+             --card-secondary-color: rgb(220,220,220);  # In previous HA OS versions, this was '--secondary-text-color'
           }
   weather_day_template:
     card:
@@ -524,8 +524,8 @@ decluttering_templates:
             ha-card {
               {% if is_state(config.entity, 'on') %}
                 background: rgba(var(--mush-rgb-[[color]]), 0.8);
-                --primary-text-color: rgb(var(--mush-rgb-white));
-                --secondary-text-color: rgba(var(--mush-rgb-white), 0.8);
+                --card-primary-color: rgb(var(--mush-rgb-white));
+                --card-secondary-color: rgb(230,230,230);
               {% endif %}
             }
             ha-card:active {
@@ -581,8 +581,8 @@ decluttering_templates:
             ha-card {
               {% if is_state(config.entity, 'on') %}
                  background: var(--cstm-rgb-automation-on-background);
-                 --primary-text-color: rgb(var(--cstm-rgb-on-primary-text));
-                 --secondary-text-color: rgb(var(--cstm-rgb-on-secondary-text));
+                 --card-primary-color: rgb(var(--cstm-rgb-on-primary-text));
+                 --card-secondary-color: rgb(var(--cstm-rgb-on-secondary-text));
               {% endif %}
             }
             ha-card:active {
@@ -606,7 +606,7 @@ views:
         ". nav favorites lights weather ."
         ". nav favorites plugs weather ."
       mediaquery:
-        '(max-width: 400px)':
+        '(max-width: 600px)':
           grid-template-columns: 3% 94% 3%
           grid-template-rows: auto
           grid-gap: 0em
@@ -632,7 +632,7 @@ views:
         view_layout:
           grid-area: nav
           show:
-            mediaquery: '(min-width: 400px)'
+            mediaquery: '(min-width: 600px)'
       - type: custom:stack-in-card
         mode: horizontal
         cards:
@@ -641,6 +641,8 @@ views:
             variables:
               - dashboard-name: dashboard-view
               - active-view: home
+        # The sticky position doesn't work with Decluttering card, so I have to add the CSS here
+        # If you don't use the UI you can use YAML anchors instead
         card_mod:
           style: |
             :host {
@@ -656,12 +658,10 @@ views:
               margin: 0px -4px -8px;
               border-radius: 0px;
             }
-            # The sticky position doesn't work with Decluttering card, so I have to add the CSS here
-            # If you don't use the UI you can use YAML anchors instead
         view_layout:
           grid-area: footer
           show:
-            mediaquery: '(max-width: 400px)'
+            mediaquery: '(max-width: 600px)'
       - type: custom:mod-card
         view_layout:
           grid-area: title
@@ -675,7 +675,7 @@ views:
             {% elif (time >= 5) %}
              Goedemorgen {{user}}
             {% else %}
-             Slaap lekker, {{user}}!
+             Slaap lekker, {{user}}
             {% endif %}
           subtitle: >-
             {% if states('sensor.buienalarm_precipitation_forecast_total')|float
@@ -934,77 +934,6 @@ views:
                     background-blend-mode: overlay;
                     background-color: rgba(var(--rgb-card-background-color), 0.7);
                   }
-          - type: conditional
-            conditions:
-              - entity: sensor.epson
-                state_not: unavailable
-            card:
-              type: vertical-stack
-              cards:
-                - type: custom:mushroom-title-card
-                  title: Printer
-                  subtitle: ''
-                - type: custom:stack-in-card
-                  cards:
-                    - type: custom:mushroom-template-card
-                      primary: Epson
-                      entity: sensor.epson
-                      secondary: >-
-                        {% if is_state('sensor.epson', 'idle')
-                        %}  
-                          Aan • Inactief
-                        {% elif is_state('sensor.epson',
-                        'printing') %}   
-                          Aan • Printen...
-                        {% elif is_state('sensor.epson',
-                        'stopped') %}   
-                          Aan • Gestopt
-                        {% else %}
-                          Uit
-                        {% endif %}
-                      icon: mdi:printer
-                      icon_color: >-
-                        {{ "teal" if is_state(entity, "idle") or
-                        is_state(entity, "printing") else "disabled" }}
-                      tap_action:
-                        action: more-info
-                      hold_action:
-                        action: none
-                      card_mod:
-                        style: |
-                          ha-card {
-                           background: none;
-                            --ha-card-box-shadow: 0px;
-                          }
-                    - type: custom:bar-card
-                      direction: right
-                      entities:
-                        - color: MediumTurquoise
-                          entity: sensor.epson_cyan_ink
-                          name: C
-                        - color: Gold
-                          entity: sensor.epson_yellow_ink
-                          name: 'Y'
-                        - color: MediumOrchid
-                          entity: sensor.epson_magenta_ink
-                          name: M
-                        - color: rgb(var(--cstm-rgb-on))
-                          entity: sensor.epson_black_ink
-                          name: B
-                      height: 8px
-                      positions:
-                        icon: 'off'
-                        value: 'off'
-                        name: 'off'
-                      target: 0
-                      stack: vertical
-                      card_mod:
-                        style: |
-                          ha-card {
-                            --bar-card-border-radius: 30px;
-                            margin: -12px -2px -8px -2px;
-                            box-shadow: none;
-                          }
           - type: custom:mushroom-title-card
             title: Favorieten
           - type: conditional
@@ -1152,549 +1081,899 @@ views:
                     transform: scale(0.95);
                     transition: 0s;
                   }
-          - type: custom:layout-card
-            layout_type: custom:masonry-layout
-            cards:
-              - type: custom:vertical-stack-in-card
-                cards:
-                  - type: custom:mushroom-template-card
-                    primary: Ziggo WiFi
-                    secondary: Verbonden
-                    icon: mdi:wifi
-                    entity: sensor.speedtest_download
-                    icon_color: blue
-                    tap_action:
-                      action: fire-dom-event
-                      browser_mod:
-                        service: browser_mod.popup
-                        data:
-                          title: WiFi
-                          content:
-                            type: vertical-stack
-                            cards:
-                              - type: custom:mushroom-title-card
-                                title: Pakketjes
-                                subtitle: ''
-                              - type: custom:stack-in-card
-                                cards:
-                                  - type: horizontal-stack
-                                    cards:
-                                      - type: custom:mushroom-entity-card
-                                        entity: >-
-                                          sensor.compal_broadband_networks_packets_s_received
-                                        name: Ontvangen
-                                        icon: mdi:download
-                                        icon_color: deep-orange
-                                      - type: custom:mushroom-entity-card
-                                        entity: >-
-                                          sensor.compal_broadband_networks_packets_s_sent
-                                        name: Verzonden
-                                        icon: mdi:upload
-                                        icon_color: blue
-                                  - type: custom:mini-graph-card
-                                    entities:
-                                      - entity: >-
-                                          sensor.compal_broadband_networks_packets_s_received
-                                        name: Ontvangen
-                                        color: rgb(var(--mush-rgb-deep-orange))
-                                      - entity: >-
-                                          sensor.compal_broadband_networks_packets_s_sent
-                                        name: Verzonden
-                                    hours_to_show: 8
-                                    hour24: true
-                                    points_per_hour: 24
-                                    aggregate_func: median
-                                    line_width: 3
-                                    font_size: 90
-                                    animate: true
-                                    show:
-                                      name: false
-                                      icon: false
-                                      state: false
-                                      labels: true
-                                      legend: false
-                                      extrema: true
-                                      fill: fade
-                  - type: custom:layout-card
-                    layout_type: custom:grid-layout
-                    cards:
-                      - type: custom:button-card
-                        entity: sensor.speedtest_download
-                        layout: icon_name
-                        name: |
-                          [[[ return Math.round(entity.state) ]]]
-                        icon: mdi:arrow-down
-                        tap_action:
-                          action: more-info
-                        show_icon: true
-                        show_name: true
-                        styles:
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          name:
-                            - font-size: 16px
-                          icon:
-                            - color: rgba(var(--cstm-rgb-on-secondary),0.9)
-                        size: 20px
-                        view_layout:
-                          grid-area: item1
-                      - type: custom:button-card
-                        entity: sensor.speedtest_upload
-                        icon: mdi:arrow-up
-                        tap_action:
-                          action: more-info
-                        show_icon: true
-                        show_name: false
-                        styles:
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          icon:
-                            - color: rgba(var(--cstm-rgb-on-secondary),0.9)
-                        size: 20px
-                        view_layout:
-                          grid-area: item2
-                    layout:
-                      grid-template-columns: 1fr 52px
-                      grid-template-rows: min-content
-                      grid-template-areas: |
-                        "item1 item2"
-                      gap: 0px
-                      margin: '-4px 8px 4px'
-              - type: custom:decluttering-card
-                template: plug_template
-                variables:
-                  - entity: switch.local_tuya_plug_2
-              - type: custom:stack-in-card
-                keep:
-                  background: false
-                cards:
-                  - type: custom:decluttering-card
-                    template: plug_template
-                    variables:
-                      - entity: switch.local_tuya_plug_4
-                  - type: custom:layout-card
-                    layout_type: custom:grid-layout
-                    cards:
-                      - type: custom:button-card
-                        icon: mdi:minus
-                        tap_action:
-                          action: call-service
-                          service: input_number.decrement
-                          service_data:
-                            entity_id: input_number.plug_4_on_duration
-                          target:
-                            entity_id: input_number.plug_4_on_duration
-                        show_icon: true
-                        show_name: false
-                        styles:
-                          grid:
-                            - grid-template-areas: '"i"'
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          icon:
-                            - color: rgba(var(--cstm-rgb-on-secondary),0.9)
-                        size: 20px
-                        view_layout:
-                          grid-area: item1
-                      - type: custom:button-card
-                        entity: input_number.plug_4_on_duration
-                        name: '[[[ return Math.round(entity.state) ]]]'
-                        tap_action:
-                          action: more-info
-                        show_icon: false
-                        show_name: true
-                        styles:
-                          grid:
-                            - grid-template-areas: '"n"'
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          name:
-                            - font-size: 16px
-                        size: 20px
-                        view_layout:
-                          grid-area: item2
-                      - type: custom:button-card
-                        icon: mdi:plus
-                        tap_action:
-                          action: call-service
-                          service: input_number.increment
-                          service_data:
-                            entity_id: input_number.plug_4_on_duration
-                          target:
-                            entity_id: input_number.plug_4_on_duration
-                        show_icon: true
-                        show_name: false
-                        styles:
-                          grid:
-                            - grid-template-areas: '"i"'
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          icon:
-                            - color: rgba(var(--cstm-rgb-on-secondary),0.9)
-                        size: 20px
-                        view_layout:
-                          grid-area: item3
-                      - type: custom:button-card
-                        entity: automation.plug_4_auto_on_at_cheapest_electricity
-                        icon: mdi:creation
-                        tap_action:
-                          action: toggle
-                        show_icon: true
-                        show_name: false
-                        styles:
-                          grid:
-                            - grid-template-areas: '"i"'
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          icon:
-                            - color: rgba(var(--cstm-rgb-on-secondary),0.8)
-                        state:
-                          - value: 'on'
-                            styles:
-                              card:
-                                - background-color: rgba(var(--cstm-rgb-on), 0.8)
-                              icon:
-                                - color: rgb(var(--cstm-rgb-bottom-nav)
-                        size: 20px
-                        view_layout:
-                          grid-area: item4
-                      - type: custom:button-card
-                        entity: input_datetime.plug_4_auto_on
-                        name: |
-                          [[[ var start = entity.attributes.hour
-                              var end = states['input_datetime.plug_4_auto_off'].attributes.hour
-                              return start + 'u » ' + end + 'u']]]
-                        tap_action:
-                          action: more-info
-                        show_icon: false
-                        show_name: true
-                        styles:
-                          grid:
-                            - grid-template-areas: '"n"'
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          name:
-                            - font-size: 16px
-                        size: 20px
-                        view_layout:
-                          grid-area: item5
-                    layout:
-                      grid-template-columns: 1fr 1fr 1fr
-                      grid-template-rows: min-content min-content
-                      grid-template-areas: |
-                        "item1 item2 item3"
-                        "item4 item5 item5"
-                      gap: 0px
-                      margin: '-4px 8px 4px'
-                card_mod:
-                  style:
-                    mushroom-state-info$: |
-                      .primary {
-                        white-space: normal !important;
-                        overflow: hidden;
-                      }
-                    .: |
-                      ha-card {
-                        {% if is_state('switch.local_tuya_plug_4', 'on') %}
-                          background: rgba(var(--mush-rgb-blue), 0.8);
-                          --primary-text-color: rgb(var(--mush-rgb-white));
-                          --secondary-text-color: rgba(var(--mush-rgb-white), 0.8);
-                        {% endif %}
-                      }
-              - type: custom:stack-in-card
-                keep:
-                  background: false
-                cards:
-                  - type: custom:mushroom-template-card
-                    entity: automation.plug_2_uit
-                    primary: Plug 2 uit
-                    secondary: >-
-                      {{state_attr('input_datetime.plug_2_s_avonds_uit',
-                      'timestamp') | timestamp_custom('%H:%M', local=false)}}
-                    icon: |-
-                      {% if is_state(entity, 'on') %}
-                        mdi:creation
-                      {% else %}
-                        mdi:creation-outline
-                      {% endif %}
-                    icon_color: |-
-                      {% if is_state(entity, 'on') %}
-                        var(--cstm-rgb-automation-on-icon)
-                      {% else %}
-                        disabled
-                      {% endif %}
-                    double_tap_action:
-                      action: call-service
-                      service: automation.toggle
-                      data: {}
-                      target:
-                        entity_id: automation.plug_2_uit
-                    tap_action:
-                      action: more-info
-                    badge_icon: |-
-                      {% if not is_state(entity, ['on', 'off']) %}
-                        mdi:help
-                      {% endif %}
-                    badge_color: orange
-                  - type: custom:layout-card
-                    layout_type: custom:grid-layout
-                    cards:
-                      - type: custom:button-card
-                        icon: mdi:minus
-                        tap_action:
-                          action: call-service
-                          service: script.decrement_plug_2_time
-                        show_icon: true
-                        show_name: false
-                        styles:
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary), 0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          icon:
-                            - color: var(--cstm-rgb-on-primary-text)
-                        size: 20px
-                        view_layout:
-                          grid-area: item1
-                      - type: custom:button-card
-                        icon: mdi:plus
-                        tap_action:
-                          action: call-service
-                          service: script.increment_plug_2_time
-                        show_icon: true
-                        show_name: false
-                        styles:
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          icon:
-                            - color: var(--cstm-rgb-on-primary-text)
-                        size: 20px
-                        view_layout:
-                          grid-area: item2
-                    layout:
-                      grid-template-columns: 1fr 1fr
-                      grid-template-rows: min-content
-                      grid-template-areas: |
-                        "item1 item2"
-                      gap: 0px
-                      margin: '-4px 8px 4px'
-                card_mod:
-                  style: |
-                    ha-card {
-                        {% if is_state('automation.plug_2_uit', 'on') %}
-                          background: var(--cstm-rgb-automation-on-background);
-                          --primary-text-color: rgb(var(--cstm-rgb-on-primary-text));
-                          --secondary-text-color: rgb(var(--cstm-rgb-on-secondary-text));
-                        {% endif %}
-                    }
-              - type: custom:mushroom-template-card
-                entity: sensor.moto_g6_battery_level
-                primary: Moto G6
-                secondary: '{{ states(entity) }}%'
-                icon: >
-                  {% set battery_level = (states(entity) | int / 10) | round(0)
-                  | int * 10 %}
+          - type: conditional
+            conditions:
+              - condition: user
+                users:
+                  - 12345678901234567890  # Change to your user
+            card:
+              type: vertical-stack
+              cards:
+                - type: horizontal-stack
+                  cards:
+                    - type: vertical-stack
+                      cards:
+                        - type: custom:vertical-stack-in-card
+                          cards:
+                            - type: custom:mushroom-template-card
+                              primary: Plantjes
+                              secondary: '{{states(''sensor.plant_water'')}} dagen'
+                              icon: mdi:leaf
+                              entity: input_datetime.plant_water
+                              icon_color: green
+                              tap_action:
+                                action: more-info
+                            - type: custom:layout-card
+                              layout_type: custom:grid-layout
+                              cards:
+                                - type: custom:bar-card
+                                  name: ' '
+                                  value: ' '
+                                  color: rgba(var(--mush-rgb-green), 0.8)
+                                  height: var(--mush-control-height)
+                                  min: '-4'
+                                  max: '10'
+                                  severity:
+                                    - color: rgb(var(--mush-rgb-red))
+                                      from: '-4'
+                                      to: '-1'
+                                    - color: rgb(var(--mush-rgb-deep-orange))
+                                      from: '-1'
+                                      to: '-1'
+                                    - color: rgb(var(--mush-rgb-orange))
+                                      to: '2'
+                                      from: '0'
+                                    - color: rgb(var(--mush-rgb-lime))
+                                      from: '3'
+                                      to: '3'
+                                    - color: rgb(var(--mush-rgb-green))
+                                      from: '4'
+                                      to: '10'
+                                  entity_row: false
+                                  positions:
+                                    icon: 'off'
+                                    indicator: 'off'
+                                  entities:
+                                    - entity: sensor.plant_water
+                                  card_mod:
+                                    style: |
+                                      ha-card {
+                                        padding: 0px;
+                                        margin: -16px -12px -4px;
+                                        box-shadow: none;
+                                        background: none;
+                                        --bar-card-border-radius: var(--mush-control-border-radius);
+                                      }
+                                      bar-card-value {
+                                        margin: 12px;
+                                        font-size: 0px;
+                                        font-weight: bolder;
+                                      }
+                                      bar-card-name {
+                                        margin: 12px;
+                                        font-size: 14px;
+                                        font-weight: bolder;
+                                      }
+                                      bar-card-backgroundbar {
+                                        opacity: 0.2;
+                                        filter: brightness(1);
+                                      }
+                                  view_layout:
+                                    grid-area: item1
+                                - type: custom:button-card
+                                  entity: input_datetime.plant_water
+                                  icon: mdi:watering-can
+                                  tap_action:
+                                    action: call-service
+                                    service: input_datetime.set_datetime
+                                    service_data:
+                                      entity_id: entity
+                                      date: >
+                                        [[[ return new
+                                        Date().toLocaleDateString('en-CA') ]]]
+                                  hold_action:
+                                    action: more-info
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item2
+                              layout:
+                                grid-template-columns: 1fr 52px
+                                grid-template-rows: min-content
+                                grid-template-areas: |
+                                  "item1 item2"
+                                gap: 0px
+                                margin: '-4px 4px -8px'
+                        - type: custom:stack-in-card
+                          keep:
+                            background: false
+                          cards:
+                            - type: custom:decluttering-card
+                              template: plug_template
+                              variables:
+                                - entity: switch.local_tuya_plug_4
+                                - primary: Fietslader
+                            - type: custom:layout-card
+                              layout_type: custom:grid-layout
+                              cards:
+                                - type: custom:button-card
+                                  icon: mdi:minus
+                                  tap_action:
+                                    action: call-service
+                                    service: input_number.decrement
+                                    service_data:
+                                      entity_id: input_number.plug_4_on_duration
+                                    target:
+                                      entity_id: input_number.plug_4_on_duration
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"i"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item1
+                                - type: custom:button-card
+                                  entity: input_number.plug_4_on_duration
+                                  name: '[[[ return Math.round(entity.state) ]]]'
+                                  tap_action:
+                                    action: more-info
+                                  show_icon: false
+                                  show_name: true
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"n"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    name:
+                                      - font-size: 16px
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item2
+                                - type: custom:button-card
+                                  icon: mdi:plus
+                                  tap_action:
+                                    action: call-service
+                                    service: input_number.increment
+                                    service_data:
+                                      entity_id: input_number.plug_4_on_duration
+                                    target:
+                                      entity_id: input_number.plug_4_on_duration
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"i"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item3
+                                - type: custom:button-card
+                                  entity: >-
+                                    automation.plug_4_auto_on_at_cheapest_electricity
+                                  icon: mdi:creation
+                                  tap_action:
+                                    action: toggle
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"i"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgba(var(--cstm-rgb-on-secondary), 0.8)
+                                  state:
+                                    - value: 'on'
+                                      styles:
+                                        card:
+                                          - background-color: rgba(var(--cstm-rgb-on), 0.8)
+                                        icon:
+                                          - color: rgb(var(--cstm-rgb-bottom-nav))
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item4
+                                - type: custom:button-card
+                                  entity: input_datetime.plug_4_auto_on
+                                  name: |
+                                    [[[ var start = entity.attributes.hour
+                                        var end = states['input_datetime.plug_4_auto_off'].attributes.hour
+                                        return start + 'u » ' + end + 'u']]]
+                                  tap_action:
+                                    action: more-info
+                                  show_icon: false
+                                  show_name: true
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"n"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    name:
+                                      - font-size: 16px
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item5
+                              layout:
+                                grid-template-columns: 1fr 1fr 1fr
+                                grid-template-rows: min-content min-content
+                                grid-template-areas: |
+                                  "item1 item2 item3"
+                                  "item4 item5 item5"
+                                gap: 0px
+                                margin: '-4px 8px 4px'
+                          card_mod:
+                            style:
+                              mushroom-state-info$: |
+                                .primary {
+                                  white-space: normal !important;
+                                  overflow: hidden;
+                                }
+                              .: |
+                                ha-card {
+                                  {% if is_state('switch.local_tuya_plug_4', 'on') %}
+                                    background: rgba(var(--mush-rgb-blue), 0.8);
+                                    --card-primary-color: rgb(var(--mush-rgb-white));
+                                    --card-secondary-color: rgba(var(--mush-rgb-white), 0.8);
+                                  {% endif %}
+                                }
+                    - type: vertical-stack
+                      cards:
+                        - type: custom:decluttering-card
+                          template: plug_template
+                          variables:
+                            - entity: switch.local_tuya_plug_2
+                        - type: custom:stack-in-card
+                          keep:
+                            background: false
+                          cards:
+                            - type: custom:mushroom-template-card
+                              entity: automation.plug_2_uit
+                              primary: Plug 2 uit
+                              secondary: >-
+                                {{state_attr('input_datetime.plug_2_s_avonds_uit',
+                                'timestamp') | timestamp_custom('%H:%M',
+                                local=false)}}
+                              icon: |-
+                                {% if is_state(entity, 'on') %}
+                                  mdi:creation
+                                {% else %}
+                                  mdi:creation-outline
+                                {% endif %}
+                              icon_color: |-
+                                {% if is_state(entity, 'on') %}
+                                  var(--cstm-rgb-automation-on-icon)
+                                {% else %}
+                                  disabled
+                                {% endif %}
+                              double_tap_action:
+                                action: call-service
+                                service: automation.toggle
+                                data: {}
+                                target:
+                                  entity_id: automation.plug_2_uit
+                              tap_action:
+                                action: more-info
+                              badge_icon: |-
+                                {% if not is_state(entity, ['on', 'off']) %}
+                                  mdi:help
+                                {% endif %}
+                              badge_color: orange
+                              card_mod:
+                                style: |
+                                  ha-card {
+                                    {% if is_state('automation.plug_2_uit', 'on') %}
+                                      --card-primary-color: rgb(var(--cstm-rgb-on-primary-text));
+                                      --card-secondary-color: rgb(var(--cstm-rgb-on-secondary-text));
+                                    {% endif %}
+                                  }
+                            - type: custom:layout-card
+                              layout_type: custom:grid-layout
+                              cards:
+                                - type: custom:button-card
+                                  icon: mdi:minus
+                                  tap_action:
+                                    action: call-service
+                                    service: script.decrement_plug_2_time
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary), 0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgb(var(--cstm-rgb-on-primary-text))
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item1
+                                - type: custom:button-card
+                                  icon: mdi:plus
+                                  tap_action:
+                                    action: call-service
+                                    service: script.increment_plug_2_time
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgb(var(--cstm-rgb-on-primary-text))
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item2
+                              layout:
+                                grid-template-columns: 1fr 1fr
+                                grid-template-rows: min-content
+                                grid-template-areas: |
+                                  "item1 item2"
+                                gap: 0px
+                                margin: '-4px 8px 4px'
+                          card_mod:
+                            style: |
+                              ha-card {
+                                  {% if is_state('automation.plug_2_uit', 'on') %}
+                                    background: var(--cstm-rgb-automation-on-background);
+                                  {% endif %}
+                              }
+                        - type: custom:mushroom-template-card
+                          entity: sensor.moto_g6_battery_level
+                          primary: Moto G6
+                          secondary: '{{ states(entity) }}%'
+                          icon: >
+                            {% set battery_level = (states(entity) | int / 10) |
+                            round(0) | int * 10 %}
 
-                  {% if battery_level == 100 %}
-                    mdi:battery
-                  {% elif battery_level > 0 %}
-                    mdi:battery-{{ battery_level }}
-                  {% else %}
-                    mdi:battery-alert-variant-outline
-                  {% endif %}
-                icon_color: grey
-                layout: horizontal
-                tap_action:
-                  action: more-info
-                badge_color: blue
-                badge_icon: |-
-                  {% if is_state('binary_sensor.moto_g6_is_charging', 'on') %}
-                    mdi:lightning-bolt
-                  {% endif %}
-              - type: custom:vertical-stack-in-card
+                            {% if battery_level == 100 %}
+                              mdi:battery
+                            {% elif battery_level > 0 %}
+                              mdi:battery-{{ battery_level }}
+                            {% else %}
+                              mdi:battery-alert-variant-outline
+                            {% endif %}
+                          icon_color: grey
+                          layout: horizontal
+                          tap_action:
+                            action: more-info
+                          badge_color: blue
+                          badge_icon: >-
+                            {% if is_state('binary_sensor.moto_g6_is_charging',
+                            'on') %}
+                              mdi:lightning-bolt
+                            {% endif %}
+                        - type: custom:mushroom-template-card
+                          entity: sensor.ipad_air_3_battery_level
+                          primary: iPad Air 3
+                          secondary: '{{ states(entity) }}%'
+                          icon: >
+                            {% set battery_level = (states(entity) | int / 10) |
+                            round(0) | int * 10 %}
+
+                            {% if battery_level == 100 %}
+                              mdi:battery
+                            {% elif battery_level > 0 %}
+                              mdi:battery-{{ battery_level }}
+                            {% else %}
+                              mdi:battery-alert-variant-outline
+                            {% endif %}
+                          icon_color: grey
+                          layout: horizontal
+                          tap_action:
+                            action: more-info
+                          badge_icon: >-
+                            {% if is_state('sensor.ipad_air_3_battery_state',
+                            'Charging') %}
+                              mdi:lightning-bolt
+                            {% endif %}
+                          badge_color: blue
+          - type: conditional
+            conditions:
+              - condition: user
+                users:
+                  - 12345678901234567890  # Change to your user
+            card:
+              type: vertical-stack
+              cards:
+                - type: horizontal-stack
+                  cards:
+                    - type: vertical-stack
+                      cards:
+                        - type: custom:stack-in-card
+                          keep:
+                            background: false
+                          cards:
+                            - type: custom:decluttering-card
+                              template: plug_template
+                              variables:
+                                - entity: switch.local_tuya_plug_4
+                                - primary: Fietslader
+                            - type: custom:layout-card
+                              layout_type: custom:grid-layout
+                              cards:
+                                - type: custom:button-card
+                                  icon: mdi:minus
+                                  tap_action:
+                                    action: call-service
+                                    service: input_number.decrement
+                                    service_data:
+                                      entity_id: input_number.plug_4_on_duration
+                                    target:
+                                      entity_id: input_number.plug_4_on_duration
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"i"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item1
+                                - type: custom:button-card
+                                  entity: input_number.plug_4_on_duration
+                                  name: '[[[ return Math.round(entity.state) ]]]'
+                                  tap_action:
+                                    action: more-info
+                                  show_icon: false
+                                  show_name: true
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"n"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    name:
+                                      - font-size: 16px
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item2
+                                - type: custom:button-card
+                                  icon: mdi:plus
+                                  tap_action:
+                                    action: call-service
+                                    service: input_number.increment
+                                    service_data:
+                                      entity_id: input_number.plug_4_on_duration
+                                    target:
+                                      entity_id: input_number.plug_4_on_duration
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"i"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item3
+                                - type: custom:button-card
+                                  entity: >-
+                                    automation.plug_4_auto_on_at_cheapest_electricity
+                                  icon: mdi:creation
+                                  tap_action:
+                                    action: toggle
+                                  show_icon: true
+                                  show_name: false
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"i"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary), 0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    icon:
+                                      - color: rgba(var(--cstm-rgb-on-secondary), 0.8)
+                                  state:
+                                    - value: 'on'
+                                      styles:
+                                        card:
+                                          - background-color: rgba(var(--cstm-rgb-on), 0.8)
+                                        icon:
+                                          - color: rgb(var(--cstm-rgb-bottom-nav))
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item4
+                                - type: custom:button-card
+                                  entity: input_datetime.plug_4_auto_on
+                                  name: |
+                                    [[[ var start = entity.attributes.hour
+                                        var end = states['input_datetime.plug_4_auto_off'].attributes.hour
+                                        return start + 'u » ' + end + 'u']]]
+                                  tap_action:
+                                    action: more-info
+                                  show_icon: false
+                                  show_name: true
+                                  styles:
+                                    grid:
+                                      - grid-template-areas: '"n"'
+                                    card:
+                                      - box-shadow: none
+                                      - padding: 0px
+                                      - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                                      - border-radius: var(--mush-control-border-radius)
+                                      - place-self: center
+                                      - height: var(--mush-control-height)
+                                    name:
+                                      - font-size: 16px
+                                  size: 20px
+                                  view_layout:
+                                    grid-area: item5
+                              layout:
+                                grid-template-columns: 1fr 1fr 1fr
+                                grid-template-rows: min-content min-content
+                                grid-template-areas: |
+                                  "item1 item2 item3"
+                                  "item4 item5 item5"
+                                gap: 0px
+                                margin: '-4px 8px 4px'
+                          card_mod:
+                            style:
+                              mushroom-state-info$: |
+                                .primary {
+                                  white-space: normal !important;
+                                  overflow: hidden;
+                                }
+                              .: |
+                                ha-card {
+                                  {% if is_state('switch.local_tuya_plug_4', 'on') %}
+                                    background: rgba(var(--mush-rgb-blue), 0.8);
+                                    --card-primary-color: rgb(var(--mush-rgb-white));
+                                    --card-secondary-color: rgba(var(--mush-rgb-white), 0.8);
+                                  {% endif %}
+                                }
+                    - type: vertical-stack
+                      cards:
+                        - type: custom:decluttering-card
+                          template: plug_template
+                          variables:
+                            - entity: switch.local_tuya_plug_1
+                        - type: custom:mushroom-template-card
+                          primary: iPad Air 2
+                          secondary: '{{ states(entity) }}%'
+                          icon: >
+                            {% set battery_level = (states(entity) | int / 10) |
+                            round(0) | int * 10 %}
+
+                            {% if battery_level == 100 %}
+                              mdi:battery
+                            {% elif battery_level > 0 %}
+                              mdi:battery-{{ battery_level }}
+                            {% else %}
+                              mdi:battery-alert-variant-outline
+                            {% endif %}
+                          icon_color: grey
+                          layout: horizontal
+                          tap_action:
+                            action: more-info
+                          badge_icon: >-
+                            {% if is_state('sensor.ipad_air_2_battery_state',
+                            'Charging') %}
+                              mdi:lightning-bolt
+                            {% endif %}
+                          badge_color: blue
+                          entity: sensor.ipad_air_2_battery_level
+                        - type: custom:mushroom-template-card
+                          primary: iPhone 6s
+                          secondary: '{{ states(entity) | round() }}%'
+                          icon: >
+                            {% set battery_level = (states(entity) | int / 10) |
+                            round(0) | int * 10 %}
+
+                            {% if battery_level == 100 %}
+                              mdi:battery
+                            {% elif battery_level > 0 %}
+                              mdi:battery-{{ battery_level }}
+                            {% else %}
+                              mdi:battery-alert-variant-outline
+                            {% endif %}
+                          icon_color: grey
+                          layout: horizontal
+                          tap_action:
+                            action: more-info
+                          badge_color: blue
+                          badge_icon: >-
+                            {% if is_state('sensor.iphone_137_battery_state',
+                            'Charging') %}
+                              mdi:lightning-bolt
+                            {% endif %}
+                          entity: sensor.iphone_137_battery_level
+                - type: custom:stack-in-card
+                  cards:
+                    - type: custom:mushroom-template-card
+                      entity: sensor.afvalwijzer_gft
+                      primary: Groenafval
+                      secondary: >-
+                        {% if states('sensor.afvalwijzer_next_date') == "Geen"
+                        %}
+
+                        Geen informatie
+
+                        {% elif states('sensor.afvalwijzer_today') == "gft" %}
+                        Vandaag geweest. Kliko weer ophalen! 
+
+                        {% else %}
+                          {% set gft = (strptime(states(entity), '%d-%m-%Y').date()) %} 
+                          {% set delta = ((as_timestamp(gft) - now().timestamp()) / (3600*24)) %} 
+                          {% if states(entity) == "Geen" %}Geen informatie 
+                          {% elif delta < 0.9 %}Vanavond kliko aan de straat! 
+                          {% elif delta < 1.9 %}Morgen ({{states(entity)}}) 
+                          {% else %}Over {{delta | round(0, "floor")}} dagen ({{as_timestamp(gft) | timestamp_custom("%A %d %B")}})
+                          {% endif %}
+                        {% endif %}
+                      icon: mdi:recycle
+                      icon_color: >-
+                        {% if states('sensor.afvalwijzer_next_date') == "Geen"
+                        %} grey {% elif states('sensor.afvalwijzer_tomorrow') ==
+                        "gft" %} green {% else %} grey {% endif %}
+                      multiline_secondary: true
+                      tap_action:
+                        action: more-info
+                      card_mod:
+                        style: |
+                          ha-card:after {
+                            content: '';
+                            border-bottom: solid 2px rgba(var(--rgb-disabled), 0.2);
+                            margin: 12px 0px -12px 0px;
+                          }
+                    - type: custom:mushroom-template-card
+                      entity: sensor.afvalwijzer_papier
+                      primary: Papier
+                      secondary: >-
+                        {% if states('sensor.afvalwijzer_next_date') == "Geen"
+                        %}
+
+                        Geen informatie
+
+                        {% elif states('sensor.afvalwijzer_today') == "papier"
+                        %} Vandaag geweest. {% else %}
+                          {% set gft = (strptime(states(entity), '%d-%m-%Y').date()) %} 
+                          {% set delta = ((as_timestamp(gft) - now().timestamp()) / (3600*24)) %} 
+                          {% if states(entity) == "Geen" %}Geen informatie 
+                          {% elif delta < 0.9 %}Vanavond kliko aan de straat! 
+                          {% elif delta < 1.9 %}Morgen ({{states(entity)}}) 
+                          {% else %}Over {{delta | round(0, "floor")}} dagen ({{as_timestamp(gft) | timestamp_custom("%A %d %B")}})
+                          {% endif %}
+                        {% endif %}
+                      icon: mdi:delete
+                      icon_color: >-
+                        {% if states('sensor.afvalwijzer_next_date') == "Geen"
+                        %} grey {% elif states('sensor.afvalwijzer_tomorrow') ==
+                        "papier" %} blue {% else %} grey {% endif %}
+                      multiline_secondary: true
+                      tap_action:
+                        action: more-info
+        view_layout:
+          grid-area: favorites
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Verlichting
+          - type: horizontal-stack
+            cards:
+              - type: vertical-stack
                 cards:
-                  - type: custom:mushroom-template-card
-                    primary: Plantjes
-                    secondary: '{{states(''sensor.plant_water'')}} dagen'
-                    icon: mdi:leaf
-                    entity: input_datetime.plant_water
-                    icon_color: green
+                  - type: custom:mushroom-light-card
+                    entity: light.local_tuya_light_2
+                    show_brightness_control: true
+                    show_color_temp_control: false
+                    show_color_control: false
+                    collapsible_controls: true
                     tap_action:
                       action: more-info
+                    use_light_color: true
+                    name: Side table
+                    icon: mdi:lamp
+                    double_tap_action:
+                      action: toggle
+                    hold_action:
+                      action: more-info
+                      card_mod:
+                      style: |
+                        ha-card {
+                          {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
+                        }
+                        ha-card:active {
+                          transform: scale(0.95);
+                          transition: 0s;
+                        }
+                  - type: custom:mushroom-light-card
+                    entity: light.local_tuya_light_3
+                    icon_type: icon
+                    use_light_color: true
+                    show_brightness_control: true
+                    show_color_control: false
+                    show_color_temp_control: false
+                    primary_info: name
+                    secondary_info: state
+                    name: Tuin
+                    tap_action:
+                      action: more-info
+                    hold_action:
+                      action: more-info
+                    double_tap_action:
+                      action: toggle
+                    collapsible_controls: true
+                    icon: mdi:lightbulb-variant
+                    fill_container: false
                     card_mod:
                       style: |
                         ha-card {
-                          box-shadow: none;
-                          background: none;
+                          {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
                         }
-                  - type: custom:layout-card
-                    layout_type: custom:grid-layout
-                    cards:
-                      - type: custom:bar-card
-                        name: ' '
-                        value: ' '
-                        color: rgba(var(--mush-rgb-green), 0.8)
-                        height: var(--mush-control-height)
-                        min: '-4'
-                        max: '10'
-                        severity:
-                          - color: rgb(var(--mush-rgb-red))
-                            from: '-4'
-                            to: '-1'
-                          - color: rgb(var(--mush-rgb-deep-orange))
-                            from: '-1'
-                            to: '-1'
-                          - color: rgb(var(--mush-rgb-orange))
-                            to: '2'
-                            from: '0'
-                          - color: rgb(var(--mush-rgb-lime))
-                            from: '3'
-                            to: '3'
-                          - color: rgb(var(--mush-rgb-green))
-                            from: '4'
-                            to: '10'
-                        entity_row: false
-                        positions:
-                          icon: 'off'
-                          indicator: 'off'
-                        entities:
-                          - entity: sensor.plant_water
-                        card_mod:
-                          style: |
-                            ha-card {
-                              padding: 0px;
-                              margin: -16px -12px -4px;
-                              box-shadow: none;
-                              background: none;
-                              --bar-card-border-radius: var(--mush-control-border-radius);
-                            }
-                            bar-card-value {
-                              margin: 12px;
-                              font-size: 0px;
-                              font-weight: bolder;
-                            }
-                            bar-card-name {
-                              margin: 12px;
-                              font-size: 14px;
-                              font-weight: bolder;
-                            }
-                            bar-card-backgroundbar {
-                              opacity: 0.2;
-                              filter: brightness(1);
-                            }
-                        view_layout:
-                          grid-area: item1
-                      - type: custom:button-card
-                        entity: input_datetime.plant_water
-                        icon: mdi:watering-can
-                        tap_action:
-                          action: call-service
-                          service: input_datetime.set_datetime
-                          service_data:
-                            entity_id: entity
-                            date: >
-                              [[[ return new Date().toLocaleDateString('en-CA')
-                              ]]]
-                        hold_action:
-                          action: more-info
-                        show_icon: true
-                        show_name: false
-                        styles:
-                          card:
-                            - box-shadow: none
-                            - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
-                            - border-radius: var(--mush-control-border-radius)
-                            - place-self: center
-                            - height: var(--mush-control-height)
-                          icon:
-                            - color: rgba(var(--cstm-rgb-on-secondary),0.9)
-                        size: 20px
-                        view_layout:
-                          grid-area: item2
-                    layout:
-                      grid-template-columns: 1fr 52px
-                      grid-template-rows: min-content
-                      grid-template-areas: |
-                        "item1 item2"
-                      gap: 0px
-                      margin: '-4px 4px -8px'
-              - type: custom:mushroom-template-card
-                entity: sensor.ipad_air_3_battery_level
-                primary: iPad Air 3
-                secondary: '{{ states(entity) }}%'
-                icon: >
-                  {% set battery_level = (states(entity) | int / 10) | round(0)
-                  | int * 10 %}
-
-                  {% if battery_level == 100 %}
-                    mdi:battery
-                  {% elif battery_level > 0 %}
-                    mdi:battery-{{ battery_level }}
-                  {% else %}
-                    mdi:battery-alert-variant-outline
-                  {% endif %}
-                icon_color: grey
-                layout: horizontal
-                tap_action:
-                  action: more-info
-                badge_icon: >-
-                  {% if is_state('sensor.ipad_air_3_battery_state', 'Charging')
-                  %}
-                    mdi:lightning-bolt
-                  {% endif %}
-                badge_color: blue
-            layout:
-              column_widths: 51% 51%
-              width: 145
-              margin: 0px
-              card_margin: 4px 4px 8px
-              min_height: 1
+                        ha-card:active {
+                          transform: scale(0.95);
+                          transition: 0s;
+                        }
+              - type: vertical-stack
+                cards:
+                  - type: custom:mushroom-light-card
+                    entity: light.local_tuya_light_1
+                    use_light_color: true
+                    show_brightness_control: true
+                    show_color_control: true
+                    show_color_temp_control: false
+                    primary_info: name
+                    secondary_info: state
+                    name: Voordeur
+                    tap_action:
+                      action: more-info
+                    hold_action:
+                      action: more-info
+                    double_tap_action:
+                      action: toggle
+                    collapsible_controls: true
+                    icon: mdi:door
+                    fill_container: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
+                        }
+                        ha-card:active {
+                          transform: scale(0.95);
+                          transition: 0s;
+                        }
+          - type: conditional
+            conditions:
+              - entity: binary_sensor.laser_printer
+                state_not: unavailable
+            card:
+              type: vertical-stack
+              cards:
+                - type: custom:mushroom-title-card
+                  title: Printer
+                  subtitle: ''
+                - type: custom:vertical-stack-in-card
+                  cards:
+                    - type: custom:mushroom-template-card
+                      primary: Printer
+                      entity: sensor.laser_printer
+                      secondary: >-
+                        {% if is_state('sensor.laser_printer', 'idle')
+                        %}  
+                          Aan • Inactief
+                        {% elif is_state('sensor.laser_printer',
+                        'printing') %}   
+                          Aan • Printen...
+                        {% elif is_state('sensor.laser_printer',
+                        'stopped') %}   
+                          Aan • Gestopt
+                        {% else %}
+                          Slaapstand
+                        {% endif %}
+                      icon: mdi:printer
+                      icon_color: >-
+                        {{ "teal" if is_state(entity, "idle") or
+                        is_state(entity, "printing") else "disabled" }}
+                      tap_action:
+                        action: more-info
+                      hold_action:
+                        action: none
+                      card_mod:
+                        style: |
+                          ha-card {
+                           background: none;
+                            --ha-card-box-shadow: 0px;
+                          }
+                    - type: custom:bar-card
+                      direction: right
+                      entities:
+                        - color: rgb(var(--cstm-rgb-on))
+                          entity: sensor.laser_printer_toner_black
+                          name: B
+                      height: 8px
+                      positions:
+                        icon: 'off'
+                        value: 'off'
+                        name: 'off'
+                      target: 0
+                      stack: vertical
+                      card_mod:
+                        style: |
+                          ha-card {
+                            --bar-card-border-radius: 30px;
+                            margin: -12px -2px -8px -2px;
+                            box-shadow: none;
+                          }
+                          bar-card-name {
+                            font-size: 12px;
+                          }
+                          bar-card-value {
+                            font-size: 12px
+                          }
         view_layout:
-          grid-area: favorites
+          grid-area: lights
       - type: vertical-stack
         cards:
           - type: custom:mushroom-title-card
@@ -1888,8 +2167,8 @@ views:
                   style: |
                     ha-card {
                       background: var(--cstm-rgb-automation-on-background);
-                      --primary-text-color: rgb(var(--cstm-rgb-on-primary-text));
-                      --secondary-text-color: rgb(var(--cstm-rgb-on-secondary-text));
+                      --card-primary-color: rgb(var(--cstm-rgb-on-primary-text));
+                      --card-secondary-color: rgb(var(--cstm-rgb-on-secondary-text));
                     }
           - type: custom:vertical-stack-in-card
             cards:
@@ -1929,7 +2208,7 @@ views:
                           }
                         .: |
                           ha-card {
-                            --secondary-text-color: {% if state_attr(config.entity, 'trending') == "up" %}rgba(var(--rgb-green)){% else %}rgba(var(--rgb-red)){% endif %};
+                            --card-secondary-color: {% if state_attr(config.entity, 'trending') == "up" %}rgba(var(--rgb-green)){% else %}rgba(var(--rgb-red)){% endif %};
                             margin: -3px 2px -6px 0px;
                             box-shadow: none;
                           }
@@ -1966,245 +2245,6 @@ views:
                   fill: fade
         view_layout:
           grid-area: weather
-      - type: vertical-stack
-        cards:
-          - type: custom:mushroom-title-card
-            title: Verlichting
-          - type: custom:layout-card
-            layout_type: custom:masonry-layout
-            cards:
-              - type: custom:mushroom-light-card
-                entity: light.local_tuya_light_2
-                show_brightness_control: true
-                show_color_temp_control: false
-                show_color_control: false
-                collapsible_controls: true
-                tap_action:
-                  action: more-info
-                use_light_color: true
-                name: Side table
-                icon: mdi:lamp
-                double_tap_action:
-                  action: toggle
-                hold_action:
-                  action: more-info
-                card_mod:
-                  style: |
-                    ha-card {
-                      {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
-                    }
-                    ha-card:active {
-                      transform: scale(0.95);
-                      transition: 0s;
-                    }
-              - type: custom:mushroom-light-card
-                entity: light.local_tuya_light_1
-                use_light_color: true
-                show_brightness_control: true
-                show_color_control: true
-                show_color_temp_control: false
-                primary_info: name
-                secondary_info: state
-                name: Voordeur
-                tap_action:
-                  action: more-info
-                hold_action:
-                  action: more-info
-                double_tap_action:
-                  action: toggle
-                collapsible_controls: true
-                icon: mdi:door
-                fill_container: false
-                card_mod:
-                  style: |
-                    ha-card {
-                      {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
-                    }
-                    ha-card:active {
-                      transform: scale(0.95);
-                      transition: 0s;
-                    }
-              - type: custom:mushroom-light-card
-                entity: light.local_tuya_light_3
-                icon_type: icon
-                use_light_color: true
-                show_brightness_control: true
-                show_color_control: false
-                show_color_temp_control: false
-                primary_info: name
-                secondary_info: state
-                name: Tuin
-                tap_action:
-                  action: more-info
-                hold_action:
-                  action: more-info
-                double_tap_action:
-                  action: toggle
-                collapsible_controls: true
-                icon: mdi:lightbulb-variant
-                fill_container: false
-                card_mod:
-                  style: |
-                    ha-card {
-                      {{ 'background: rgba(var(--mush-rgb-amber), 0.2);' if is_state(config.entity, 'on') }}
-                    }
-                    ha-card:active {
-                      transform: scale(0.95);
-                      transition: 0s;
-                    }
-              - type: conditional
-                conditions:
-                  - entity: automation.kerstmis_modus
-                    state: 'on'
-                card:
-                  type: custom:stack-in-card
-                  cards:
-                    - type: custom:mushroom-template-card
-                      entity: switch.local_tuya_plug_3
-                      primary: Kerstboom
-                      secondary: |-
-                        {% if is_state(entity, 'on') %}
-                          Aan
-                        {% elif is_state(entity, 'off') %}
-                          Uit
-                        {% else %}
-                          Niet beschikbaar
-                        {% endif %}
-                      icon: mdi:pine-tree
-                      icon_color: |-
-                        {% if is_state(entity, 'on') %}
-                          green
-                        {% else %}
-                          disabled
-                        {% endif %}
-                      tap_action:
-                        action: toggle
-                    - type: custom:mushroom-template-card
-                      icon: mdi:star-four-points
-                      entity: switch.local_tuya_plug_3
-                      icon_color: |-
-                        {% if is_state(entity, 'on') %}
-                          yellow
-                        {% else %}
-                          grey
-                        {% endif %}
-                      primary: Star
-                      card_mod:
-                        style:
-                          mushroom-shape-icon$: |
-                            ha-icon {
-                              --icon-animation: star 8s ease infinite alternate;
-                            }
-                            @keyframes star {
-                              0%, 100% { transform: translateY(-10px) rotate(0deg) scale(0.4); }
-                              50% { transform: translateY(-10px) rotate(360deg) scale(0.6); }
-                            }
-                            .shape {
-                              --shape-color: none;
-                            }
-                          .: |
-                            ha-card {
-                              width: 66px;
-                              top: -66px;
-                            }
-                    - type: custom:mushroom-template-card
-                      icon: mdi:grain
-                      icon_color: |-
-                        {% if is_state(entity, 'on') %}
-                          red
-                        {% else %}
-                          grey
-                        {% endif %}
-                      entity: switch.local_tuya_plug_3
-                      card_mod:
-                        style:
-                          mushroom-shape-icon$: |
-                            ha-icon {
-                              {{'--icon-animation: flash 2s steps(1) infinite, lights 2s infinite;' if is_state(config.entity, 'on')}}
-                              clip-path: polygon(51% 15%, 24% 74%, 74% 74%);
-                            }
-                            @keyframes flash {
-                              50% { transform: rotateY(180deg); }
-                            }
-                            @keyframes lights {
-                              0%, 100% {--icon-color: rgb(var(--rgb-red)); }
-                              6.25% { --icon-color: rgb(var(--rgb-deep-orange)); }
-                              12.5% { --icon-color: rgb(var(--rgb-orange)); }
-                              18.75% { --icon-color: rgb(var(--rgb-amber)); }
-                              25% { --icon-color: rgb(var(--rgb-yellow)); }
-                              31.25% { --icon-color: rgb(var(--rgb-lime)); }
-                              37.5% { --icon-color: rgb(var(--rgb-light-green)); }
-                              43.75% { --icon-color: rgb(var(--rgb-green)); }
-                              50% { --icon-color: rgb(var(--rgb-teal)); }
-                              56.25% { --icon-color: rgb(var(--rgb-cyan)); }
-                              62.5% { --icon-color: rgb(var(--rgb-light-blue)); }
-                              68.75% { --icon-color: rgb(var(--rgb-blue)); }
-                              75% { --icon-color: rgb(var(--rgb-indigo)); }
-                              81.25% { --icon-color: rgb(var(--rgb-deep-purple)); }
-                              87.5% { --icon-color: rgb(var(--rgb-purple)); }
-                              93.75% { --icon-color: rgb(var(--rgb-pink)); }
-                            }
-                            .shape {
-                              --shape-color: none;
-                            }
-                          .: |
-                            ha-card {
-                              width: 66px;
-                              top: -132px;
-                            }
-                    - type: custom:mushroom-template-card
-                      icon: mdi:gift
-                      icon_color: |-
-                        {% if is_state(entity, 'on') %}
-                          red
-                        {% else %}
-                          grey
-                        {% endif %}
-                      entity: switch.local_tuya_plug_3
-                      card_mod:
-                        style:
-                          mushroom-shape-icon$: |
-                            ha-icon {
-                              {{'--icon-animation: surprise 4s ease infinite;' if is_state(config.entity, 'on')}}
-                            }
-                            @keyframes surprise {
-                              0%, 20%, 100% { transform: translateY(0); }
-                              2.5% { transform: translateY(-2px) rotate(-27deg); }
-                              5% { transform: translateY(-2px) rotate(21deg); }
-                              7.5% { transform: translateY(-2px) rotate(-15deg); }
-                              10% { transform: translateY(-2px) rotate(9deg); }
-                              12.5% { transform: translateY(0); }
-                              15% { transform: translateY(-1.2px) }
-                            }
-                            .shape {
-                              --shape-color: none;
-                              --icon-size: 18px;
-                              top: 18px;
-                              left: 18px;
-                            }
-                          .: |
-                            ha-card {
-                              width: 66px;
-                              top: -198px;
-                            }
-                  card_mod:
-                    style: |
-                      ha-card {
-                        height: 66px;
-                        {{ 'background: rgba(var(--mush-rgb-green), 0.2);' if is_state('switch.local_tuya_plug_3', 'on') }}
-                      }
-                      ha-card:active {
-                        transform: scale(0.95);
-                        transition: 0s;
-                      }
-            layout:
-              column_widths: 51% 51%
-              width: 145
-              margin: 0px
-              card_margin: 4px 4px 8px
-              min_height: 1
-        view_layout:
-          grid-area: lights
       - square: false
         columns: 2
         type: grid
@@ -2361,7 +2401,7 @@ views:
         ". nav media lights cameras ."
         ". nav media lights batteries ."
       mediaquery:
-        '(max-width: 400px)':
+        '(max-width: 600px)':
           grid-template-columns: 3% 94% 3%
           grid-template-rows: auto
           grid-gap: 0em
@@ -2389,7 +2429,7 @@ views:
         view_layout:
           grid-area: nav
           show:
-            mediaquery: '(min-width: 400px)'
+            mediaquery: '(min-width: 600px)'
       - type: custom:stack-in-card
         mode: horizontal
         cards:
@@ -2398,10 +2438,10 @@ views:
             variables:
               - dashboard-name: dashboard-view
               - active-view: apparaten
+        # The sticky position doesn't work with Decluttering card, so I have to add the CSS here
+        # If you don't use the UI you can use YAML anchors instead
         card_mod:
           style: |
-            # The sticky position doesn't work with Decluttering card, so I have to add the CSS here
-            # If you don't use the UI you can use YAML anchors instead
             :host {
               z-index: 4;
               position: sticky !important;
@@ -2418,7 +2458,7 @@ views:
         view_layout:
           grid-area: footer
           show:
-            mediaquery: '(max-width: 400px)'
+            mediaquery: '(max-width: 600px)'
       - type: custom:mod-card
         card:
           type: custom:mushroom-title-card
@@ -3435,19 +3475,19 @@ views:
                           card:
                             - box-shadow: none
                             - padding: 0px
-                            - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                            - background-color: rgba(var(--cstm-rgb-on-secondary), 0.05)
                             - border-radius: var(--mush-control-border-radius)
                             - place-self: center
                             - height: var(--mush-control-height)
                           icon:
-                            - color: rgba(var(--cstm-rgb-on-secondary),0.8)
+                            - color: rgba(var(--cstm-rgb-on-secondary), 0.8)
                         state:
                           - value: 'on'
                             styles:
                               card:
                                 - background-color: rgba(var(--cstm-rgb-on), 0.8)
                               icon:
-                                - color: rgb(var(--cstm-rgb-bottom-nav)
+                                - color: rgb(var(--cstm-rgb-bottom-nav))
                         size: 20px
                         view_layout:
                           grid-area: item4
@@ -3495,7 +3535,7 @@ views:
                       ha-card {
                         {% if is_state('switch.local_tuya_plug_4', 'on') %}
                           background: var(--cstm-rgb-plug-on-background);
-                          --secondary-text-color: var(--primary-text-color);
+                          --card-secondary-color: var(--card-primary-color);
                         {% endif %}
                       }
               - type: custom:stack-in-card
@@ -3588,8 +3628,8 @@ views:
                     ha-card {
                         {% if is_state('automation.plug_2_uit', 'on') %}
                           background: var(--cstm-rgb-automation-on-background);
-                          --primary-text-color: rgb(var(--cstm-rgb-on-primary-text));
-                          --secondary-text-color: rgb(var(--cstm-rgb-on-secondary-text));
+                          --card-primary-color: rgb(var(--cstm-rgb-on-primary-text));
+                          --card-secondary-color: rgb(var(--cstm-rgb-on-secondary-text));
                         {% endif %}
                     }
             layout:
@@ -3643,7 +3683,7 @@ views:
         cards:
           - type: conditional
             conditions:
-              - entity: sensor.epson
+              - entity: binary_sensor.laser_printer
                 state_not: unavailable
             card:
               type: vertical-stack
@@ -3651,23 +3691,22 @@ views:
                 - type: custom:mushroom-title-card
                   title: Printer
                   subtitle: ''
-                - type: custom:stack-in-card
+                - type: custom:vertical-stack-in-card
                   cards:
                     - type: custom:mushroom-template-card
-                      primary: Epson WF2540
-                      entity: sensor.epson
+                      primary: Printer
                       secondary: >-
-                        {% if is_state('sensor.epson', 'idle')
+                        {% if is_state('sensor.laser_printer', 'idle')
                         %}  
                           Aan • Inactief
-                        {% elif is_state('sensor.epson',
+                        {% elif is_state('sensor.laser_printer',
                         'printing') %}   
                           Aan • Printen...
-                        {% elif is_state('sensor.epson',
+                        {% elif is_state('sensor.laser_printer',
                         'stopped') %}   
                           Aan • Gestopt
                         {% else %}
-                          Uit
+                          Slaapstand
                         {% endif %}
                       icon: mdi:printer
                       icon_color: >-
@@ -3677,6 +3716,7 @@ views:
                         action: more-info
                       hold_action:
                         action: none
+                      entity: sensor.laser_printer
                       card_mod:
                         style: |
                           ha-card {
@@ -3686,17 +3726,8 @@ views:
                     - type: custom:bar-card
                       direction: right
                       entities:
-                        - color: MediumTurquoise
-                          entity: sensor.epson_cyan_ink
-                          name: C
-                        - color: Gold
-                          entity: sensor.epson_yellow_ink
-                          name: 'Y'
-                        - color: MediumOrchid
-                          entity: sensor.epson
-                          name: M
                         - color: rgb(var(--cstm-rgb-on))
-                          entity: sensor.epson_black_ink
+                          entity: sensor.laser_printer_toner_black
                           name: B
                       height: 8px
                       positions:
@@ -3711,6 +3742,12 @@ views:
                             --bar-card-border-radius: 30px;
                             margin: -12px -2px -8px -2px;
                             box-shadow: none;
+                          }
+                          bar-card-name {
+                            font-size: 12px;
+                          }
+                          bar-card-value {
+                            font-size: 12px
                           }
           - type: custom:mushroom-title-card
             title: Apparaten
@@ -3839,3 +3876,1238 @@ views:
                     }
         view_layout:
           grid-area: batteries
+
+  - theme: Adaptive Mushroom
+    title: Nieuws
+    path: nieuws
+    icon: mdi:bell-outline
+    type: custom:grid-layout
+    layout:
+      grid-template-columns: 0em 74px 30% 30% 30% auto
+      grid-template-rows: grid-title-row-height auto auto auto
+      grid-gap: 0.5em
+      grid-template-areas: |
+        ". . title title . ."
+        ". nav left1 center1 right1 ."
+        ". nav left1 center1 right2 ."
+        ". nav left3 left3 right2 ."
+        ". nav . . right2 ."
+      mediaquery:
+        '(max-width: 600px)':
+          grid-template-columns: 3% 94% 3%
+          grid-template-rows: auto
+          grid-gap: 0em
+          grid-template-areas: |
+            ". title ."
+            ". left1 ."
+            ". left3 ."
+            ". center1 ."
+            ". right1 ."
+            ". right2 ."
+            "footer footer footer"
+    subview: false
+    visible:
+      - user: 12345678901234567890  # Edit to your users
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ' '
+          - type: custom:decluttering-card
+            template: side-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: nieuws
+        view_layout:
+          grid-area: nav
+          show:
+            mediaquery: '(min-width: 600px)'
+      - type: custom:stack-in-card
+        mode: horizontal
+        cards:
+          - type: custom:decluttering-card
+            template: bottom-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: nieuws
+        card_mod:
+          style: >
+            :host {
+              z-index: 4;
+              position: sticky !important;
+              position: -webkit-sticky;
+              bottom: 0;
+            }
+            ha-card {    
+              background: rgb(var(--cstm-rgb-bottom-nav));
+              box-shadow: none;
+              padding-bottom: 15px;
+              margin: 0px -4px -8px;
+              border-radius: 0px;
+            }
+        view_layout:
+          grid-area: footer
+          show:
+            mediaquery: '(max-width: 600px)'
+      - type: vertical-stack
+        cards:
+          - type: custom:mod-card
+            card:
+              type: custom:mushroom-title-card
+              title: >-
+                {% if
+                states('sensor.buienalarm_precipitation_forecast_total')|float >
+                0 %}
+
+                Neerslag om
+                {{as_timestamp(states('sensor.buienalarm_next_rain_forecast')) |
+
+                timestamp_custom("%H:%M") }}
+
+                {% else %}
+
+                {{states("sensor.openweathermap_temperature")|round(1)}} °C,
+                {{states("sensor.openweathermap_weather")}}
+
+                {% endif%}
+              subtitle: ''
+            card_mod:
+              style:
+                mushroom-title-card$: |
+                  h1 {
+                    --title-font-size: 26px;
+                    --title-font-weight: bold;
+                    --title-line-height: 1;
+                  }
+                  h2 {
+                    --title-font-size: 0px;
+                  }
+                  .header {
+                    --title-padding: 12px 12px 8px;
+                  }
+        view_layout:
+          grid-area: title
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Vandaag
+          - type: custom:stack-in-card
+            cards:
+              - type: custom:decluttering-card
+                template: weather_now_template
+                variables:
+                  - secondary: >-
+                      {{ states('sensor.openweathermap_cloud_coverage') }}%
+                      bewolkt
+            card_mod:
+              style: |
+                ha-card {
+                  height: 13em !important;
+                  background: linear-gradient(to top, transparent, rgba(var(--frog-rgb-{{states('sensor.weather_frog_status')}})) 30%), url({{states('sensor.weather_frog_image_wide')}});
+                  background-size: cover, 200% auto;
+                  background-position: bottom left {% if is_state("sensor.weather_frog_location", "field") %}20%{% elif is_state("sensor.weather_frog_location", "hills") %}40%{% else %}10%{% endif %};
+                  background-repeat: no-repeat;
+                  background-blend-mode: saturation;
+                }
+          - type: custom:swipe-card
+            parameters:
+              spaceBetween: 8
+            cards:
+              - type: custom:stack-in-card
+                cards:
+                  - type: horizontal-stack
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: sensor.openweathermap_temperature
+                        primary: '{{states(entity) | round(1)}} °C'
+                        secondary: >-
+                          Gevoel:
+                          {{states('sensor.openweathermap_feels_like_temperature')
+                          | round(0)}}°
+                        multiline_secondary: true
+                        icon: mdi:thermometer
+                        icon_color: orange
+                        tap_action:
+                          action: more-info
+                      - type: custom:mushroom-entity-card
+                        entity: sensor.openweathermap_humidity
+                        primary_info: state
+                        secondary_info: name
+                        name: Vochtigheid
+                        icon_color: blue
+                  - type: custom:mini-graph-card
+                    entities:
+                      - entity: sensor.openweathermap_temperature
+                        name: Temperatuur
+                        color: rgb(var(--mush-rgb-orange))
+                      - entity: sensor.openweathermap_humidity
+                        name: Vochtigheid
+                        color: rgb(var(--mush-rgb-blue))
+                        y_axis: secondary
+                    hours_to_show: 24
+                    hour24: true
+                    points_per_hour: 1
+                    line_width: 3
+                    font_size: 90
+                    animate: true
+                    show:
+                      name: false
+                      icon: false
+                      state: false
+                      legend: false
+                      extrema: true
+                      fill: fade
+              - type: custom:sun-card
+        view_layout:
+          grid-area: left1
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ' '
+          - type: picture-entity
+            entity: weather.buienradar
+            show_state: true
+            show_name: true
+            camera_view: auto
+            camera_image: camera.buienradar
+          - type: custom:gap-card
+            height: 2
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                entity: sensor.openweathermap_feels_like_temperature
+                icon: mdi:thermometer
+                icon_color: orange
+                content: >-
+                  Voelt als
+                  {{states("sensor.openweathermap_feels_like_temperature") |
+                  round(0)}}º
+                tap_action:
+                  action: more-info
+                card_mod:
+                  style: |
+                    ha-card {
+                      --chip-background: rgba(var(--mush-rgb-orange), 0.2);
+                    }
+              - type: template
+                entity: sensor.openweathermap_wind_speed
+                icon: >-
+                  {% if ((states('sensor.openweathermap_wind_speed')|float /
+                  0.836)**(2/3)) | round() > 6 %} mdi:windsock {% else %}
+                  mdi:weather-windy {% endif %}
+                icon_color: grey
+                content: >-
+                  {{((states('sensor.openweathermap_wind_speed')|float /
+                  0.836)**(2/3)) | round()}} Bft
+                tap_action:
+                  action: more-info
+                card_mod:
+                  style: |
+                    ha-card {
+                      --chip-background: rgba(var(--mush-rgb-grey), 0.2);
+                    }
+              - type: template
+                entity: sensor.openweathermap_wind_bearing
+                icon: >-
+                  {% set dir =
+                  (states('sensor.openweathermap_wind_bearing')|int)/45 %} {% if
+                  dir > 0.5 and dir <= 1.5 %} mdi:arrow-bottom-left {% elif dir
+                  > 1.5 and dir <= 2.5 %} mdi:arrow-left {% elif dir > 2.5 and
+                  dir <= 3.5 %} mdi:arrow-top-left {% elif dir > 3.5 and dir <=
+                  4.5 %} mdi:arrow-up {% elif dir > 4.5 and dir <= 5.5 %}
+                  mdi:arrow-top-right {% elif dir > 5.5 and dir <= 6.5 %}
+                  mdi:arrow-right {% elif dir > 6.5 and dir <= 7.5 %}
+                  mdi:arrow-bottom-right {% else %} mdi:arrow-down {% endif %}
+                tap_action:
+                  action: more-info
+                card_mod:
+                  style: |
+                    ha-card {
+                      --chip-background: rgba(var(--mush-rgb-grey), 0.2);
+                    }
+              - type: template
+                entity: sensor.openweathermap_forecast_precipitation_probability
+                picture: >-
+                  https://www.gstatic.com/images/icons/material/apps/weather/2x/showers_rain_dark_color_48dp.png
+                content: >-
+                  {{states('sensor.openweathermap_forecast_precipitation_probability')}}%
+                tap_action:
+                  action: more-info
+                card_mod:
+                  style: |
+                    ha-card {
+                      --chip-background: rgba(var(--mush-rgb-light-blue), 0.3);
+                    }
+              - type: conditional
+                conditions:
+                  - entity: sun.sun
+                    state: above_horizon
+                chip:
+                  type: template
+                  entity: sensor.openweathermap_uv_index
+                  icon: mdi:weather-sunny
+                  content: >-
+                    UV-index:
+                    {{states('sensor.openweathermap_uv_index')|round(0)}}
+                  tap_action:
+                    action: more-info
+              - type: conditional
+                conditions:
+                  - entity: sun.sun
+                    state: below_horizon
+                chip:
+                  type: entity
+                  entity: sensor.moon_phase
+                  tap_action:
+                    action: more-info
+            alignment: start
+        view_layout:
+          grid-area: center1
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Komende uren
+            subtitle: ''
+          - type: custom:hourly-weather
+            entity: weather.openweathermap
+            icons: true
+            name: ' '
+            show_precipitation_amounts: false
+            num_segments: '16'
+            label_spacing: '2'
+            show_wind: 'false'
+            card_mod:
+              style:
+                weather-bar$: |
+                  .main {
+                    --color-clear-night: rgba(var(--mush-rgb-black), 0.2) !important;
+                    --color-cloudy: rgba(var(--mush-rgb-grey), 0.35) !important;
+                    --color-fog: var(--color-cloudy);
+                    --color-hail: rgba(var(--mush-rgb-blue), 0.3) !important;
+                    --color-lightning: var(--color-rainy);
+                    --color-lightning-rainy: var(--color-rainy);
+                    --color-partlycloudy: rgba(var(--mush-rgb-light-blue), 0.35) !important;
+                    --color-pouring: var(--color-rainy);
+                    --color-rainy: rgba(var(--mush-rgb-indigo), 0.25) !important;
+                    --color-snowy: var(--mush-rgb-snow) !important;
+                    --color-snowy-rainy: var(--color-partlycloudy);
+                    --color-sunny: rgba(var(--mush-rgb-yellow), 0.4) !important;
+                    --color-windy: var(--color-sunny);
+                    --color-windy-variant: var(--color-sunny);
+                    --color-exceptional: rgba(var(--mush-rgb-amber), 0.3) !important;
+                  }
+                  .bar > div {
+                    height: 42px !important;
+                  }            
+                  .bar > div:first-child {
+                    border-top-left-radius: 14px !important;
+                    border-bottom-left-radius: 14px !important;
+                  }            
+                  .bar > div:last-child {
+                    border-top-right-radius: 14px !important;
+                    border-bottom-right-radius: 14px !important;
+                  }            
+                  .bar > div > span {
+                    text-shadow: none !important;
+                    color: rgb(var(--card-primary-color));
+                    font-size: 14px;
+                    font-weight: bold;
+                  } 
+                  .axes > div > .bar-block-bottom > .hour {
+                    font-size: 12px;
+                    font-weight: bolder;
+                  }
+                  .axes > div > .bar-block-bottom > .temperature {
+                    font-size: 12px;
+                    font-weight: bolder;
+                  }
+        view_layout:
+          grid-area: left3
+      - type: vertical-stack
+        cards:
+          - type: custom:layout-card
+            layout_type: custom:grid-layout
+            layout:
+              grid-template-colums: 70% 30%
+              grid-template-rows: auto
+              grid-template-areas: |
+                "left right"
+              grid-gap: 0px
+              margin: '-4px'
+            cards:
+              - type: custom:mushroom-title-card
+                title: Komende week
+                view_layout:
+                  grid-area: left
+              - type: custom:mushroom-chips-card
+                chips:
+                  - type: template
+                    entity: automation.melding_weer_van_morgen
+                    content: |-
+                      {% if is_state(entity, 'on') %}
+                        Aan
+                      {% else %}
+                        Uit
+                      {% endif %}
+                    icon: |-
+                      {% if is_state(entity, 'on') %}
+                        mdi:bell
+                      {% else %}
+                        mdi:bell-off
+                      {% endif %}
+                    icon_color: |-
+                      {% if is_state(entity, 'on') %}
+                        deep-orange
+                      {% else %}
+                        disabled
+                      {% endif %}
+                    tap_action:
+                      action: call-service
+                      service: automation.toggle
+                      data: {}
+                      target:
+                        entity_id: automation.melding_weer_van_morgen
+                    hold_action:
+                      action: more-info
+                alignment: end
+                view_layout:
+                  grid-area: right
+                card_mod:
+                  style: |
+                    ha-card {
+                      margin: 12px 2px 0px;
+                      --chip-background: none;
+                      --chip-box-shadow: none;
+                      --ha-card-box-shadow: none;
+                      --chip-border-radius: 12px;
+                      --chip-height: 42px;
+                      --chip-padding: 12px;
+                    }
+            card_mod:
+              style: |
+                ha-card {
+                  background: none;
+                  box-shadow: none;
+                }
+          - type: custom:stack-in-card
+            mode: horizontal
+            cards:
+              - type: custom:decluttering-card
+                template: weather_day_template
+                variables:
+                  - index: 0
+                  - day: 1
+              - type: custom:decluttering-card
+                template: weather_day_template
+                variables:
+                  - index: 1
+                  - day: 2
+              - type: custom:decluttering-card
+                template: weather_day_template
+                variables:
+                  - index: 2
+                  - day: 3
+              - type: custom:decluttering-card
+                template: weather_day_template
+                variables:
+                  - index: 3
+                  - day: 4
+              - type: custom:decluttering-card
+                template: weather_day_template
+                variables:
+                  - index: 4
+                  - day: 5
+        view_layout:
+          grid-area: right1
+      - type: vertical-stack
+        cards:
+          - type: custom:layout-card
+            layout_type: custom:grid-layout
+            layout:
+              grid-template-colums: 70% 30%
+              grid-template-rows: auto
+              grid-template-areas: |
+                "left right"
+              grid-gap: 0px
+              margin: '-4px'
+            cards:
+              - type: custom:mushroom-title-card
+                title: Afvalkalender
+                view_layout:
+                  grid-area: left
+              - type: custom:mushroom-chips-card
+                chips:
+                  - type: template
+                    entity: automation.afvalophaal_meldingen
+                    content: |-
+                      {% if is_state(entity, 'on') %}
+                        Aan
+                      {% else %}
+                        Uit
+                      {% endif %}
+                    icon: |-
+                      {% if is_state(entity, 'on') %}
+                        mdi:bell
+                      {% else %}
+                        mdi:bell-off
+                      {% endif %}
+                    icon_color: |-
+                      {% if is_state(entity, 'on') %}
+                        deep-orange
+                      {% else %}
+                        disabled
+                      {% endif %}
+                    tap_action:
+                      action: call-service
+                      service: automation.toggle
+                      data: {}
+                      target:
+                        entity_id: automation.afvalophaal_meldingen
+                    hold_action:
+                      action: more-info
+                alignment: end
+                card_mod:
+                  style: |
+                    ha-card {
+                      margin: 12px 2px 0px;
+                      --chip-background: none;
+                      --chip-box-shadow: none;
+                      --ha-card-box-shadow: none;
+                      --chip-border-radius: 12px;
+                      --chip-height: 42px;
+                      --chip-padding: 12px;
+                    }
+                view_layout:
+                  grid-area: right
+            card_mod:
+              style: |
+                ha-card {
+                  background: none;
+                  box-shadow: none;
+                }
+          - type: custom:stack-in-card
+            cards:
+              - type: custom:mushroom-template-card
+                entity: sensor.afvalwijzer_gft
+                primary: Groenafval
+                secondary: >-
+                  {% if states('sensor.afvalwijzer_next_date') == "Geen" %}
+
+                  Geen informatie
+
+                  {% elif states('sensor.afvalwijzer_today') == "gft" %} Vandaag
+                  geweest. Kliko weer ophalen! 
+
+                  {% else %}
+                    {% set gft = (strptime(states(entity), '%d-%m-%Y').date()) %} 
+                    {% set delta = ((as_timestamp(gft) - now().timestamp()) / (3600*24)) %} 
+                    {% if states(entity) == "Geen" %}Geen informatie 
+                    {% elif delta < 0.9 %}Vanavond kliko aan de straat! 
+                    {% elif delta < 1.9 %}Morgen ({{states(entity)}}) 
+                    {% else %}Over {{delta | round(0, "floor")}} dagen ({{as_timestamp(gft) | timestamp_custom("%A %d %B")}})
+                    {% endif %}
+                  {% endif %}
+                icon: mdi:recycle
+                icon_color: >-
+                  {% if states('sensor.afvalwijzer_next_date') == "Geen" %} grey
+                  {% elif states('sensor.afvalwijzer_tomorrow') == "gft" %}
+                  green {% else %} grey {% endif %}
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+                card_mod:
+                  style: |
+                    ha-card:after {
+                      content: '';
+                      border-bottom: solid 2px rgba(var(--rgb-disabled), 0.2);
+                      margin: 12px 0px -12px 0px;
+                    }
+              - type: custom:mushroom-template-card
+                entity: sensor.afvalwijzer_papier
+                primary: Papier
+                secondary: >-
+                  {% if states('sensor.afvalwijzer_next_date') == "Geen" %}
+
+                  Geen informatie
+
+                  {% elif states('sensor.afvalwijzer_today') == "papier" %}
+                  Vandaag geweest. {% else %}
+                    {% set gft = (strptime(states(entity), '%d-%m-%Y').date()) %} 
+                    {% set delta = ((as_timestamp(gft) - now().timestamp()) / (3600*24)) %} 
+                    {% if states(entity) == "Geen" %}Geen informatie 
+                    {% elif delta < 0.9 %}Vanavond kliko aan de straat! 
+                    {% elif delta < 1.9 %}Morgen ({{states(entity)}}) 
+                    {% else %}Over {{delta | round(0, "floor")}} dagen ({{as_timestamp(gft) | timestamp_custom("%A %d %B")}})
+                    {% endif %}
+                  {% endif %}
+                icon: mdi:delete
+                icon_color: >-
+                  {% if states('sensor.afvalwijzer_next_date') == "Geen" %} grey
+                  {% elif states('sensor.afvalwijzer_tomorrow') == "papier" %}
+                  blue {% else %} grey {% endif %}
+                multiline_secondary: true
+                tap_action:
+                  action: more-info
+          - type: custom:mushroom-title-card
+            title: ''
+            subtitle: Overig nieuws
+          - type: custom:swipe-card
+            parameters:
+              spaceBetween: 8
+              pagination:
+                type: bullets
+                color: white
+            cards:
+              - type: custom:stack-in-card
+                mode: vertical
+                cards:
+                  - type: custom:layout-card
+                    layout_type: grid
+                    layout:
+                      grid-template-columns: 70% 30%
+                      grid-gap: 0px;
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: sensor.yahoofinance_aex
+                        primary: ^AEX
+                        secondary: '{{state_attr(entity, "friendly_name")}}'
+                        icon: '{{state_attr(entity,"icon")}}'
+                        icon_color: grey
+                        tap_action:
+                          action: more-info
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              .secondary {
+                                white-space: normal !important;
+                                overflow: hidden;
+                              }
+                            .: |
+                              ha-card {
+                                box-shadow: none;
+                                margin: -4px -7px;
+                              }
+                              ha-card:after {
+                                content: '';
+                                border-bottom: solid 2px rgba(var(--rgb-disabled), 0.2);
+                                margin: 12px -92px -12px 0px;
+                              }
+                      - type: custom:mushroom-template-card
+                        entity: sensor.yahoofinance_aex
+                        primary: '{{states(entity)}}'
+                        secondary: >
+                          {% if state_attr(entity, 'trending') == "up" %}+{%
+                          endif
+
+                          %}{{state_attr(entity,'regularMarketChangePercent')}}%
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              * {
+                                text-align: end;
+                                font-family: 'SF Pro Rounded', system-ui;
+                              }
+                            .: |
+                              ha-card {
+                                --card-secondary-color: {% if state_attr(config.entity, 'trending') == "up" %}rgba(var(--rgb-green)){% else %}rgba(var(--rgb-red)){% endif %};
+                                margin: -3px 2px -6px 0px;
+                                box-shadow: none;
+                              }
+                  - type: custom:layout-card
+                    layout_type: grid
+                    layout:
+                      grid-template-columns: 70% 30%
+                      grid-gap: 0px;
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: sensor.yahoofinance_vusa_as
+                        primary: VUSA.AS
+                        secondary: '{{state_attr(entity, "friendly_name")}}'
+                        icon: '{{state_attr(entity,"icon")}}'
+                        icon_color: grey
+                        tap_action:
+                          action: more-info
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              .secondary {
+                                white-space: normal !important;
+                                overflow: hidden;
+                              }
+                            .: |
+                              ha-card {
+                                box-shadow: none;
+                                margin: -4px -7px;
+                              }
+                              ha-card:after {
+                                content: '';
+                                border-bottom: solid 2px rgba(var(--rgb-disabled), 0.2);
+                                margin: 12px -92px -12px 0px;
+                              }
+                      - type: custom:mushroom-template-card
+                        entity: sensor.yahoofinance_vusa_as
+                        primary: '{{states(entity)}}'
+                        secondary: >
+                          {% if state_attr(entity, 'trending') == "up" %}+{%
+                          endif
+
+                          %}{{state_attr(entity,'regularMarketChangePercent')}}%
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              * {
+                                text-align: end;
+                                font-family: 'SF Pro Rounded', system-ui;
+                              }
+                            .: |
+                              ha-card {
+                                --card-secondary-color: {% if state_attr(config.entity, 'trending') == "up" %}rgba(var(--rgb-green)){% else %}rgba(var(--rgb-red)){% endif %};
+                                margin: -3px 2px -6px 0px;
+                                box-shadow: none;
+                              }
+                  - type: custom:layout-card
+                    layout_type: grid
+                    layout:
+                      grid-template-columns: 70% 30%
+                      grid-gap: 0px;
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: sensor.yahoofinance_iemm_as
+                        primary: IEMM.AS
+                        secondary: '{{state_attr(entity, "friendly_name")}}'
+                        icon: '{{state_attr(entity,"icon")}}'
+                        icon_color: grey
+                        tap_action:
+                          action: more-info
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              .secondary {
+                                white-space: normal !important;
+                                overflow: hidden;
+                              }
+                            .: |
+                              ha-card {
+                                box-shadow: none;
+                                margin: -4px -7px;
+                              }
+                      - type: custom:mushroom-template-card
+                        entity: sensor.yahoofinance_iemm_as
+                        primary: '{{states(entity)}}'
+                        secondary: >
+                          {% if state_attr(entity, 'trending') == "up" %}+{%
+                          endif
+
+                          %}{{state_attr(entity,'regularMarketChangePercent')}}%
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              * {
+                                text-align: end;
+                                font-family: 'SF Pro Rounded', system-ui;
+                              }
+                            .: |
+                              ha-card {
+                                --card-secondary-color: {% if state_attr(config.entity, 'trending') == "up" %}rgba(var(--rgb-green)){% else %}rgba(var(--rgb-red)){% endif %};
+                                margin: -3px 2px -6px 0px;
+                                box-shadow: none;
+                              }
+              - type: custom:stack-in-card
+                mode: vertical
+                cards:
+                  - type: custom:layout-card
+                    layout_type: grid
+                    layout:
+                      grid-template-columns: 70% 30%
+                      grid-gap: 0px;
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: sensor.brandstofprijs_euro95
+                        primary: Euro 95
+                        secondary: ''
+                        icon: mdi:currency-eur
+                        icon_color: orange
+                        card_mod:
+                          style: |
+                            ha-card {
+                              box-shadow: none;
+                              margin: -4px -7px;
+                            }
+                            ha-card:after {
+                              content: '';
+                              border-bottom: solid 2px rgba(var(--rgb-disabled), 0.2);
+                              margin: 12px -92px -12px 0px;
+                            }
+                      - type: custom:mushroom-template-card
+                        entity: sensor.brandstofprijs_euro95
+                        primary: '{{states(entity)}}'
+                        secondary: ''
+                        tap_action:
+                          action: more-info
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              * {
+                                text-align: end;
+                                font-family: 'SF Pro Rounded';
+                              }
+                            .: |
+                              ha-card {
+                                margin: 6px 2px -6px 0px;
+                                box-shadow: none;
+                              }
+                  - type: custom:layout-card
+                    layout_type: grid
+                    layout:
+                      grid-template-columns: 70% 30%
+                      grid-gap: 0px;
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: sensor.brandstofprijs_super
+                        primary: Super
+                        secondary: ''
+                        icon: mdi:engine
+                        icon_color: orange
+                        card_mod:
+                          style: |
+                            ha-card {
+                              box-shadow: none;
+                              margin: -4px -7px;
+                            }
+                            ha-card:after {
+                              content: '';
+                              border-bottom: solid 2px rgba(var(--rgb-disabled), 0.2);
+                              margin: 12px -92px -12px 0px;
+                            }
+                      - type: custom:mushroom-template-card
+                        entity: sensor.brandstofprijs_super
+                        primary: '{{states(entity)}}'
+                        secondary: ''
+                        tap_action:
+                          action: more-info
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              * {
+                                text-align: end;
+                                font-family: 'SF Pro Rounded';
+                              }
+                            .: |
+                              ha-card {
+                                margin: 6px 2px -6px 0px;
+                                box-shadow: none;
+                              }
+                  - type: custom:layout-card
+                    layout_type: grid
+                    layout:
+                      grid-template-columns: 70% 30%
+                      grid-gap: 0px;
+                    cards:
+                      - type: custom:mushroom-template-card
+                        entity: sensor.brandstofprijs_diesel
+                        primary: Diesel
+                        secondary: ''
+                        icon: mdi:gas-station
+                        icon_color: orange
+                        card_mod:
+                          style: |
+                            ha-card {
+                              box-shadow: none;
+                              margin: -4px -7px;
+                            }
+                      - type: custom:mushroom-template-card
+                        entity: sensor.brandstofprijs_diesel
+                        primary: '{{states(entity)}}'
+                        secondary: ''
+                        tap_action:
+                          action: more-info
+                        card_mod:
+                          style:
+                            mushroom-state-info$: |
+                              * {
+                                text-align: end;
+                                font-family: 'SF Pro Rounded';
+                              }
+                            .: |
+                              ha-card {
+                                margin: 6px 2px -6px 0px;
+                                box-shadow: none;
+                              }
+        view_layout:
+          grid-area: right2
+
+  - theme: Adaptive Mushroom
+    title: Automatiseringen
+    path: automatiseringen
+    icon: mdi:creation
+    type: custom:grid-layout
+    layout:
+      grid-template-columns: 0em 74px 30% 30% 30% auto
+      grid-template-rows: grid-title-row-height auto auto auto
+      grid-gap: 0.5em
+      grid-template-areas: |
+        ". . title title . ."
+        ". nav left1 center1 right1 ."
+        ". nav left2 center2 right2 ."
+        ". nav . . . ."
+      mediaquery:
+        '(max-width: 600px)':
+          grid-template-columns: 3% 94% 3%
+          grid-template-rows: auto
+          grid-gap: 0em
+          grid-template-areas: |
+            ". title ."
+            ". left1 ."
+            ". left2 ."
+            ". center1 ."
+            ". center2 ."
+            ". right1 ."
+            ". right2 ."
+            "footer footer footer"
+    visible:
+      - user: 12345678901234567890  # Edit to your users
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ' '
+          - type: custom:decluttering-card
+            template: side-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: automatiseringen
+        view_layout:
+          grid-area: nav
+          show:
+            mediaquery: '(min-width: 600px)'
+      - type: custom:stack-in-card
+        mode: horizontal
+        cards:
+          - type: custom:decluttering-card
+            template: bottom-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: automatiseringen
+        card_mod:
+          style: >
+            :host {
+              z-index: 4;
+              position: sticky !important;
+              position: -webkit-sticky;
+              bottom: 0;
+            }
+            ha-card {    
+              background: rgb(var(--cstm-rgb-bottom-nav));
+              box-shadow: none;
+              padding-bottom: 15px;
+              margin: 0px -4px -8px;
+              border-radius: 0px;
+            }
+        view_layout:
+          grid-area: footer
+          show:
+            mediaquery: '(max-width: 600px)'
+      - type: custom:mod-card
+        card:
+          type: custom:mushroom-title-card
+          title: Automatiseringen
+          subtitle: >
+            You have got {{ states.automation | list | length }} automations and {{ states.script | list | length }} scripts in total
+        card_mod:
+          style:
+            mushroom-title-card$: |
+              h1 {
+                --title-font-size: 26px;
+                --title-font-weight: bold;
+                --title-line-height: 1;
+              }
+              h2 {
+                --title-font-size: 16px;
+              }
+              .header {
+                --title-padding: 12px 12px 0px;
+              }
+        view_layout:
+          grid-area: title
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Huismodus
+            subtitle: ''
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: input_boolean.filmmodus
+                  - primary: Filmmodus
+                  - color: red
+                  - icon_on: mdi:popcorn
+                  - icon_off: mdi:popcorn
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: automation.kerstmis_modus
+                  - primary: Kerstmis
+                  - color: green
+                  - icon_on: mdi:pine-tree
+                  - icon_off: mdi:pine-tree-variant-outline
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: input_boolean.gast_modus
+                  - primary: Gastmodus
+                  - color: blue
+                  - icon_on: mdi:account-group
+                  - icon_off: mdi:account-group-outline
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+          - type: custom:mushroom-title-card
+            title: ''
+            subtitle: Vakantie
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: input_boolean.vakantie_modus
+                  - primary: Vakantie
+                  - color: amber
+                  - icon_on: mdi:umbrella-beach
+                  - icon_off: mdi:umbrella-beach-outline
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.vakantie_modus_lampen
+                  - primary: 'Vakantie: lampen'
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.vakantie_modus_plug_2
+                  - primary: 'Vakantie: Plug 2'
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+          - type: custom:mushroom-title-card
+            title: Planten
+          - square: false
+            type: grid
+            cards:
+              - type: custom:vertical-stack-in-card
+                cards:
+                  - type: custom:mushroom-template-card
+                    primary: Plantjes
+                    secondary: '{{states(''sensor.plant_water'')}} dagen'
+                    icon: mdi:leaf
+                    entity: input_datetime.plant_water
+                    icon_color: green
+                    tap_action:
+                      action: more-info
+                  - type: custom:layout-card
+                    layout_type: custom:grid-layout
+                    cards:
+                      - type: custom:bar-card
+                        name: ' '
+                        value: ' '
+                        color: rgba(var(--mush-rgb-green), 0.8)
+                        height: var(--mush-control-height)
+                        min: '-4'
+                        max: '10'
+                        severity:
+                          - color: rgb(var(--mush-rgb-red))
+                            from: '-4'
+                            to: '-1'
+                          - color: rgb(var(--mush-rgb-deep-orange))
+                            from: '-1'
+                            to: '-1'
+                          - color: rgb(var(--mush-rgb-orange))
+                            to: '2'
+                            from: '0'
+                          - color: rgb(var(--mush-rgb-lime))
+                            from: '3'
+                            to: '3'
+                          - color: rgb(var(--mush-rgb-green))
+                            from: '4'
+                            to: '10'
+                        entity_row: false
+                        positions:
+                          icon: 'off'
+                          indicator: 'off'
+                        entities:
+                          - entity: sensor.plant_water
+                        card_mod:
+                          style: |
+                            ha-card {
+                              padding: 0px;
+                              margin: -16px -12px -4px;
+                              box-shadow: none;
+                              background: none;
+                              --bar-card-border-radius: var(--mush-control-border-radius);
+                            }
+                            bar-card-value {
+                              margin: 12px;
+                              font-size: 0px;
+                              font-weight: bolder;
+                            }
+                            bar-card-name {
+                              margin: 12px;
+                              font-size: 14px;
+                              font-weight: bolder;
+                            }
+                            bar-card-backgroundbar {
+                              opacity: 0.2;
+                              filter: brightness(1);
+                            }
+                        view_layout:
+                          grid-area: item1
+                      - type: custom:button-card
+                        entity: input_datetime.plant_water
+                        icon: mdi:watering-can
+                        tap_action:
+                          action: call-service
+                          service: input_datetime.set_datetime
+                          service_data:
+                            entity_id: entity
+                            date: >
+                              [[[ return new Date().toLocaleDateString('en-CA')
+                              ]]]
+                        hold_action:
+                          action: more-info
+                        show_icon: true
+                        show_name: false
+                        styles:
+                          card:
+                            - box-shadow: none
+                            - padding: 0px
+                            - background-color: rgba(var(--cstm-rgb-on-secondary), 0.05)
+                            - border-radius: var(--mush-control-border-radius)
+                            - place-self: center
+                            - height: var(--mush-control-height)
+                          icon:
+                            - color: rgba(var(--cstm-rgb-on-secondary), 0.9)
+                        size: 20px
+                        view_layout:
+                          grid-area: item2
+                    layout:
+                      grid-template-columns: 1fr 52px
+                      grid-template-rows: min-content
+                      grid-template-areas: |
+                        "item1 item2"
+                      gap: 0px
+                      margin: '-4px 4px -8px'
+              - type: custom:mushroom-number-card
+                entity: input_number.plant_water
+                name: Interval
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.spraakassistent_plant
+                  - primary: Plant spraak-assistent
+            columns: 2
+        view_layout:
+          grid-area: left1
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Automatiseringen
+            subtitle: ''
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.plug_2_uit
+                  - primary: Plug 2 uit
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.plug_3_auto_on_at_cheapest_electricity
+                  - primary: Plug 3 aan/uit energieprijzen
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.plug_4_auto_on_at_cheapest_electricity
+                  - primary: Plug 4 aan/uit energieprijzen
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.plug_4_set_on_and_off_time
+                  - primary: Plugs aan/uit tijd instellen
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.lights_voordeur_s_avonds_aan
+                  - primary: Voordeur lamp 's avonds
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.camera_recording_modus
+                  - primary: Camera opname-modus
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.on_share
+                  - primary: YouTube share naar TV
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+        view_layout:
+          grid-area: center1
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Meldingen
+            subtitle: ''
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.afvalophaal_meldingen
+                  - primary: Afval ophaling
+                  - icon_on: mdi:creation
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.melding_voor_lampen_uit_bij_bedtijd
+                  - primary: Bedtijd lampen uit
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.melding_voor_energieprijzen_morgen
+                  - primary: Energieprijzen morgen
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: automation.melding_weer_van_morgen
+                  - primary: Weer morgen
+              - type: custom:decluttering-card
+                template: automation_template
+                variables:
+                  - entity: >-
+                      automation.meld_hoge_temperatuur_van_raspberry_pi_processor
+                  - primary: RPi temperatuur
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+        view_layout:
+          grid-area: right1
