@@ -289,7 +289,7 @@ decluttering_templates:
                 }
         - type: custom:mushroom-template-card
           primary: ''
-          secondary: Instellingen
+          secondary: Systeem
           icon: |
             {% if '[[active-view]]' == 'instellingen' %}
               mdi:cog
@@ -5111,3 +5111,896 @@ views:
               min_height: 1
         view_layout:
           grid-area: right1
+
+  - theme: Adaptive Mushroom
+    icon: mdi:cog
+    title: Systeem
+    path: instellingen
+    type: custom:grid-layout
+    layout:
+      grid-template-columns: 0em 74px 30% 30% 30% auto
+      grid-template-rows: grid-title-row-height auto auto auto
+      grid-gap: 0.5em
+      grid-template-areas: |
+        ". . title title . ."
+        ". nav left2 center1 right1 ."
+        ". nav left1 center1 right1 ."
+        ". nav left3 center2 right1 ."
+      mediaquery:
+        '(max-width: 600px)':
+          grid-template-columns: 3% 94% 3%
+          grid-template-rows: auto
+          grid-gap: 0em
+          grid-template-areas: |
+            ". title ."
+            ". left1 ."
+            ". left2 ."
+            ". left3 ."
+            ". center1 ."
+            ". center2 ."
+            ". right1 ."
+            ". right2 ."
+            "footer footer footer"
+    visible:
+      - user: 12345678901234567890  # Edit to your users
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ' '
+          - type: custom:decluttering-card
+            template: side-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: instellingen
+        view_layout:
+          grid-area: nav
+          show:
+            mediaquery: '(min-width: 600px)'
+      - type: custom:stack-in-card
+        mode: horizontal
+        cards:
+          - type: custom:decluttering-card
+            template: bottom-nav
+            variables:
+              - dashboard-name: dashboard-view
+              - active-view: instellingen
+        card_mod:
+          style: |
+            :host {
+              z-index: 4;
+              position: sticky !important;
+              position: -webkit-sticky;
+              bottom: 0;
+            }
+            ha-card {    
+              background: rgb(var(--cstm-rgb-bottom-nav));
+              box-shadow: none;
+              padding-bottom: 15px;
+              margin: 0px -4px -8px;
+              border-radius: 0px;
+            }
+        view_layout:
+          grid-area: footer
+          show:
+            mediaquery: '(max-width: 600px)'
+      - type: custom:mod-card
+        card:
+          type: custom:mushroom-title-card
+          title: Systeem
+          subtitle: ''
+        card_mod:
+          style:
+            mushroom-title-card$: |
+              h1 {
+                --title-font-size: 26px;
+                --title-font-weight: bold;
+                --title-line-height: 1;
+              }
+              h2 {
+                --title-font-size: 16px;
+              }
+              .header {
+                --title-padding: 12px 12px 0px;
+              }
+        view_layout:
+          grid-area: title
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Gezin
+            subtitle: ''
+          - square: false
+            columns: 2
+            type: grid
+            cards:
+              - type: custom:mushroom-person-card
+                entity: person.a
+                icon_type: entity-picture
+                icon: mdi:face-man
+              - type: custom:mushroom-person-card
+                entity: person.b
+                icon: mdi:face-woman
+                icon_type: entity-picture
+              - type: custom:mushroom-person-card
+                entity: person.c
+                icon_type: entity-picture
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: input_boolean.gast_modus
+                  - primary: Guests
+                  - color: blue
+                  - icon_on: mdi:account-group
+                  - icon_off: mdi:account-group-outline
+          - type: custom:mushroom-title-card
+            title: ''
+            subtitle: Huismodus
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: input_boolean.filmmodus
+                  - primary: Filmmodus
+                  - color: red
+                  - icon_on: mdi:popcorn
+                  - icon_off: mdi:popcorn
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: automation.kerstmis_modus
+                  - primary: Kerstmis
+                  - color: green
+                  - icon_on: mdi:pine-tree
+                  - icon_off: mdi:pine-tree-variant-outline
+              - type: custom:decluttering-card
+                template: plug_template
+                variables:
+                  - entity: input_boolean.vakantie_modus
+                  - primary: Vakantie modus
+                  - color: amber
+                  - icon_on: mdi:umbrella-beach
+                  - icon_off: mdi:umbrella-beach-outline
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+        view_layout:
+          grid-area: left2
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Internet
+            subtitle: ''
+          - type: custom:vertical-stack-in-card
+            cards:
+              - type: custom:mushroom-template-card
+                primary: WiFi
+                secondary: Verbonden
+                icon: mdi:wifi
+                entity: sensor.speedtest_download
+                icon_color: blue
+                tap_action:
+                  action: fire-dom-event
+                  browser_mod:
+                    service: browser_mod.popup
+                    data:
+                      title: WiFi
+                      content:
+                        type: vertical-stack
+                        cards:
+                          - type: custom:mushroom-title-card
+                            title: Pakketjes
+                            subtitle: ''
+                          - type: custom:stack-in-card
+                            cards:
+                              - type: horizontal-stack
+                                cards:
+                                  - type: custom:mushroom-entity-card
+                                    entity: >-
+                                      sensor.network_packets_s_received
+                                    name: Ontvangen
+                                    icon: mdi:download
+                                    icon_color: deep-orange
+                                  - type: custom:mushroom-entity-card
+                                    entity: >-
+                                      sensor.network_packets_s_sent
+                                    name: Verzonden
+                                    icon: mdi:upload
+                                    icon_color: blue
+                              - type: custom:mini-graph-card
+                                entities:
+                                  - entity: >-
+                                      sensor.network_packets_s_received
+                                    name: Ontvangen
+                                    color: rgb(var(--mush-rgb-deep-orange))
+                                  - entity: >-
+                                      sensor.network_packets_s_sent
+                                    name: Verzonden
+                                hours_to_show: 8
+                                hour24: true
+                                points_per_hour: 24
+                                aggregate_func: median
+                                line_width: 3
+                                font_size: 90
+                                animate: true
+                                show:
+                                  name: false
+                                  icon: false
+                                  state: false
+                                  labels: true
+                                  legend: false
+                                  extrema: true
+                                  fill: fade
+              - type: custom:layout-card
+                layout_type: custom:grid-layout
+                cards:
+                  - type: custom:button-card
+                    entity: sensor.speedtest_download
+                    layout: icon_name
+                    name: |
+                      [[[ return Math.round(entity.state) ]]]
+                    icon: mdi:arrow-down
+                    tap_action:
+                      action: more-info
+                    show_icon: true
+                    show_name: true
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      name:
+                        - font-size: 16px
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item1
+                  - type: custom:button-card
+                    entity: sensor.speedtest_upload
+                    icon: mdi:arrow-up
+                    tap_action:
+                      action: more-info
+                    show_icon: true
+                    show_name: false
+                    styles:
+                      card:
+                        - box-shadow: none
+                        - padding: 0px
+                        - background-color: rgba(var(--cstm-rgb-on-secondary),0.05)
+                        - border-radius: var(--mush-control-border-radius)
+                        - place-self: center
+                        - height: var(--mush-control-height)
+                      icon:
+                        - color: rgba(var(--cstm-rgb-on-secondary),0.9)
+                    size: 20px
+                    view_layout:
+                      grid-area: item2
+                layout:
+                  grid-template-columns: 1fr 52px
+                  grid-template-rows: min-content
+                  grid-template-areas: |
+                    "item1 item2"
+                  gap: 0px
+                  margin: '-4px 8px 4px'
+          - type: custom:stack-in-card
+            cards:
+              - type: custom:mushroom-template-card
+                entity: ''
+                primary: Voer speedtest uit
+                secondary: ''
+                multiline_secondary: true
+                icon: mdi:wifi-refresh
+                icon_color: grey
+                tap_action:
+                  action: call-service
+                  service: homeassistant.update_entity
+                  data: {}
+                  target:
+                    entity_id:
+                      - sensor.speedtest_download
+                      - sensor.speedtest_upload
+                      - sensor.speedtest_ping
+              - type: custom:mushroom-template-card
+                card_mod:
+                  style: |
+                    ha-card {
+                      margin: -25px 12px 0px 12px;
+                      border-bottom: solid 2px rgba(var(--rgb-disabled), 0.2);
+                    }
+              - type: custom:vertical-stack-in-card
+                horizontal: true
+                cards:
+                  - type: vertical-stack
+                    cards:
+                      - type: custom:apexcharts-card
+                        chart_type: radialBar
+                        series:
+                          - entity: sensor.speedtest_download
+                            color: rgb(255, 87, 34)
+                            max: 60
+                            show:
+                              legend_value: false
+                        apex_config:
+                          plotOptions:
+                            radialBar:
+                              offsetY: 0
+                              startAngle: -108
+                              endAngle: 108
+                              hollow:
+                                size: 80%
+                              dataLabels:
+                                name:
+                                  show: false
+                                value:
+                                  show: false
+                              track:
+                                strokeWidth: 70%
+                                margin: 0
+                          fill:
+                            type: gradient
+                            gradient:
+                              shade: light
+                              type: horizontal
+                              shadeIntensity: 0.3
+                              inverseColors: false
+                              opacityFrom: 1
+                              opacityTo: 1
+                              stops:
+                                - 0
+                                - 50
+                                - 55
+                                - 90
+                          legend:
+                            show: false
+                          chart:
+                            height: 130
+                        card_mod:
+                          style: |
+                            ha-card {
+                              box-shadow: none;
+                              background: none;
+                            }
+                      - type: custom:mushroom-entity-card
+                        entity: sensor.speedtest_download
+                        primary_info: state
+                        secondary_info: name
+                        name: Download
+                        icon: mdi:download
+                        icon_color: deep-orange
+                        layout: vertical
+                        card_mod:
+                          style: |
+                            ha-card {
+                              margin-top: -65px;
+                              margin-left: auto;
+                              margin-right: auto;
+                              margin-bottom: 2px;
+                              box-shadow: none;
+                              background: none;
+                            }
+                  - type: vertical-stack
+                    cards:
+                      - type: custom:apexcharts-card
+                        chart_type: radialBar
+                        series:
+                          - entity: sensor.speedtest_upload
+                            color: rgb(33, 150, 243)
+                            max: 60
+                            show:
+                              legend_value: false
+                        apex_config:
+                          plotOptions:
+                            radialBar:
+                              offsetY: 0
+                              startAngle: -108
+                              endAngle: 108
+                              hollow:
+                                size: 80%
+                              dataLabels:
+                                name:
+                                  show: false
+                                value:
+                                  show: false
+                              track:
+                                strokeWidth: 70%
+                                margin: 0
+                          fill:
+                            type: gradient
+                            gradient:
+                              shade: light
+                              type: horizontal
+                              shadeIntensity: 0.3
+                              inverseColors: false
+                              opacityFrom: 1
+                              opacityTo: 1
+                              stops:
+                                - 0
+                                - 50
+                                - 55
+                                - 90
+                          legend:
+                            show: false
+                          chart:
+                            height: 130
+                        card_mod:
+                          style: |
+                            ha-card {
+                              box-shadow: none;
+                              background: none;
+                            }
+                      - type: custom:mushroom-entity-card
+                        entity: sensor.speedtest_upload
+                        primary_info: state
+                        secondary_info: name
+                        name: Upload
+                        icon: mdi:upload
+                        icon_color: blue
+                        layout: vertical
+                        card_mod:
+                          style: |
+                            ha-card {
+                              margin-top: -65px;
+                              margin-left: auto;
+                              margin-right: auto;
+                              margin-bottom: 2px;
+                              box-shadow: none;
+                              background: none;
+                            }
+                  - type: vertical-stack
+                    cards:
+                      - type: custom:mushroom-entity-card
+                        entity: sensor.speedtest_ping
+                        primary_info: state
+                        secondary_info: name
+                        name: Ping
+                        icon_color: teal
+                        icon: mdi:wan
+                        layout: vertical
+                        card_mod:
+                          style: |
+                            ha-card {
+                              margin-top: 20px;
+                              margin-left: auto;
+                              margin-right: auto;
+                              margin-bottom: 2px;
+                              box-shadow: none;
+                              background: none;
+                            }
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: none;
+                      background: none;
+                    }
+        view_layout:
+          grid-area: left1
+      - type: vertical-stack
+        cards:
+          - type: custom:layout-card
+            layout_type: custom:grid-layout
+            layout:
+              grid-template-colums: 70% 30%
+              grid-template-rows: auto
+              grid-template-areas: |
+                "left right"
+              grid-gap: 0px
+              margin: '-4px'
+            cards:
+              - type: custom:mushroom-title-card
+                title: Raspberry Pi
+                subtitle: ''
+                title_tap_action:
+                  action: navigate
+                  navigation_path: /config/hardware
+                view_layout:
+                  grid-area: left
+              - type: custom:mushroom-chips-card
+                chips:
+                  - type: template
+                    entity: >-
+                      automation.meld_hoge_temperatuur_van_raspberry_pi_processor
+                    content: |-
+                      {% if is_state(entity, 'on') %}
+                        Aan
+                      {% else %}
+                        Uit
+                      {% endif %}
+                    icon: |-
+                      {% if is_state(entity, 'on') %}
+                        mdi:bell
+                      {% else %}
+                        mdi:bell-off
+                      {% endif %}
+                    icon_color: |-
+                      {% if is_state(entity, 'on') %}
+                        deep-orange
+                      {% else %}
+                        disabled
+                      {% endif %}
+                    tap_action:
+                      action: call-service
+                      service: automation.toggle
+                      data: {}
+                      target:
+                        entity_id: >-
+                          automation.meld_hoge_temperatuur_van_raspberry_pi_processor
+                    hold_action:
+                      action: more-info
+                alignment: end
+                card_mod:
+                  style: |
+                    ha-card {
+                      margin: 12px 2px 0px;
+                      --chip-background: none;
+                      --chip-box-shadow: none;
+                      --ha-card-box-shadow: none;
+                      --chip-border-radius: 12px;
+                      --chip-height: 42px;
+                      --chip-padding: 12px;
+                    }
+                view_layout:
+                  grid-area: right
+            card_mod:
+              style: |
+                ha-card {
+                  background: none;
+                  box-shadow: none;
+                }
+          - type: custom:mushroom-template-card
+            primary: '{{states(''sensor.disk_use_percent_config'')}}% opslag gebruikt'
+            secondary: >-
+              {{states('sensor.disk_use')}} GB van {{(states('sensor.disk_free')
+              | float + states('sensor.disk_use') | float) | round(1)}} GB
+            icon: mdi:sd
+            entity: sensor.disk_use_percent_config
+            icon_color: grey
+            tap_action:
+              action: more-info
+          - type: custom:stack-in-card
+            mode: horizontal
+            cards:
+              - type: custom:layout-card
+                layout_type: custom:grid-layout
+                layout:
+                  grid-template-columns: 50px auto
+                  grid-gap: 0px
+                  margin: '-4px -4px -8px -4px'
+                cards:
+                  - type: custom:mushroom-template-card
+                    primary: ''
+                    secondary: ''
+                    icon: mdi:sd
+                    entity: sensor.disk_use_percent_config
+                    icon_color: grey
+                    tap_action:
+                      action: more-info
+                    card_mod:
+                      style: |
+                        ha-card {
+                          box-shadow: none;
+                          background: none;
+                        }
+                  - type: custom:bar-card
+                    entity: sensor.disk_use_percent_config
+                    name: Opslag
+                    color: rgba(var(--cstm-rgb-on), 0.4)
+                    height: 42px
+                    min: '0'
+                    max: '100'
+                    entity_row: false
+                    positions:
+                      icon: 'off'
+                      indicator: 'off'
+                    card_mod:
+                      style: |
+                        ha-card {
+                          padding: 0px;
+                          margin: -4px 0px -4px 0px;
+                          box-shadow: none;
+                          background: none;
+                          --bar-card-border-radius: 14px;
+                        }
+                        bar-card-value {
+                          margin: 12px;
+                          font-size: 14px;
+                          font-weight: bolder;
+                        }
+                        bar-card-name {
+                          margin: 12px;
+                          font-size: 14px;
+                          font-weight: bolder;
+                        }
+                        bar-card-backgroundbar {
+                          opacity: 0.2;
+                          filter: brightness(1);
+                        }
+          - type: custom:stack-in-card
+            mode: horizontal
+            cards:
+              - type: custom:layout-card
+                layout_type: custom:grid-layout
+                layout:
+                  grid-template-columns: 50px auto
+                  grid-gap: 0px
+                  margin: '-4px -4px -8px -4px'
+                cards:
+                  - type: custom:mushroom-template-card
+                    primary: ''
+                    secondary: ''
+                    icon: mdi:memory
+                    entity: sensor.memory_use_percent
+                    icon_color: grey
+                    tap_action:
+                      action: more-info
+                    card_mod:
+                      style: |
+                        ha-card {
+                          box-shadow: none;
+                          background: none;
+                        }
+                  - type: custom:bar-card
+                    entity: sensor.memory_use_percent
+                    name: ROM
+                    color: rgba(var(--cstm-rgb-on), 0.4)
+                    height: 42px
+                    min: '0'
+                    max: '100'
+                    entity_row: false
+                    positions:
+                      icon: 'off'
+                      indicator: 'off'
+                    card_mod:
+                      style: |
+                        ha-card {
+                          padding: 0px;
+                          margin: -4px 0px -4px 0px;
+                          box-shadow: none;
+                          background: none;
+                          --bar-card-border-radius: 14px;
+                        }
+                        bar-card-value {
+                          margin: 12px;
+                          font-size: 14px;
+                          font-weight: bolder;
+                        }
+                        bar-card-name {
+                          margin: 12px;
+                          font-size: 14px;
+                          font-weight: bolder;
+                        }
+                        bar-card-backgroundbar {
+                          opacity: 0.2;
+                          filter: brightness(1);
+                        }
+          - type: custom:stack-in-card
+            cards:
+              - type: horizontal-stack
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.processor_temperature
+                    primary: '{{states(entity) | round(1)}} °C'
+                    secondary: Temperatuur
+                    icon: mdi:thermometer
+                    icon_color: orange
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-entity-card
+                    entity: sensor.processor_use
+                    primary_info: state
+                    secondary_info: name
+                    name: CPU
+                    icon_color: blue
+                    tap_action:
+                      action: more-info
+              - type: custom:mini-graph-card
+                entities:
+                  - entity: sensor.processor_temperature
+                    name: Temperatuur
+                    color: rgb(var(--mush-rgb-orange))
+                  - entity: sensor.processor_use
+                    name: CPU
+                    color: rgb(var(--mush-rgb-blue))
+                    y_axis: secondary
+                hours_to_show: 12
+                hour24: true
+                points_per_hour: 4
+                line_width: 3
+                font_size: 90
+                animate: true
+                show:
+                  name: false
+                  icon: false
+                  state: false
+                  legend: false
+                  extrema: true
+                  fill: fade
+          - type: custom:mushroom-title-card
+            title: Developer tools
+          - type: custom:mushroom-template-card
+            primary: Refresh theme
+            secondary: ''
+            icon: mdi:refresh
+            tap_action:
+              action: call-service
+              service: frontend.reload_themes
+              target: {}
+            icon_color: grey
+          - type: custom:mushroom-entity-card
+            entity: sensor.last_boot
+            icon_color: grey
+            secondary_info: name
+            primary_info: state
+            name: Last reboot
+            tap_action:
+              action: more-info
+          - type: custom:search-card
+        view_layout:
+          grid-area: center1
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: Software
+          - type: custom:mushroom-template-card
+            primary: Back-ups
+            secondary: >-
+              {{state_attr('sensor.backup_state', 'backups_in_google_drive')}}
+              back-ups, totaal {{state_attr('sensor.backup_state',
+              'size_in_google_drive')}}
+
+              Vorige: {% if state_attr('sensor.backup_state', 'last_backup') ==
+              "Never" %}onbekend{% else %}{% set delta = (now().timestamp() -
+              as_timestamp(state_attr('sensor.backup_state',
+              'last_backup')))/86400 %}{% if delta < 1 %}vanmorgen{% elif delta
+              < 2 %}gisteren{% else %}{{delta | round(0, "floor")}} dagen
+              geleden{% endif %}{% endif %}
+
+              Volgende: {% set delta =
+              (as_timestamp(state_attr('sensor.backup_state', 'next_backup')) -
+              now().timestamp())/86400 %}{% if delta < 1 %}vannacht{% elif delta
+              < 1.5 %}morgen{% else %}over {{delta | round(0, "floor")}} dagen{%
+              endif %}
+            icon: |-
+              {% if states('binary_sensor.backups_stale') == "off" %}
+                mdi:cloud-check
+              {% else %}
+                mdi:cloud-question
+              {% endif %}
+            multiline_secondary: true
+            icon_color: |-
+              {% if states('binary_sensor.backups_stale') == "off" %}
+                green
+              {% else %}
+                red
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /cebe7a76_hassio_google_drive_backup
+          - type: custom:layout-card
+            layout_type: custom:horizontal-layout
+            cards:
+              - type: custom:mushroom-update-card
+                entity: update.home_assistant_core_update
+                name: HA Core
+                show_buttons_control: true
+                collapsible_controls: true
+              - type: custom:mushroom-update-card
+                entity: update.home_assistant_operating_system_update
+                name: HA OS
+                show_buttons_control: true
+                collapsible_controls: true
+                icon: mdi:home-assistant
+              - type: custom:mushroom-update-card
+                entity: update.home_assistant_supervisor_update
+                show_buttons_control: true
+                collapsible_controls: true
+                name: Supervisor
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+          - type: custom:mushroom-title-card
+            title: ''
+            subtitle: Add-ons
+            subtitle_tap_action:
+              action: navigate
+              navigation_path: /hassio
+          - type: custom:mushroom-template-card
+            entity: ''
+            icon: |-
+              {% if has_value('sensor.hacs') %}
+              mdi:store
+              {% else %}
+              mdi:store-alert
+              {% endif %}
+            icon_color: |-
+              {% if states('sensor.hacs') == "0" %}
+              green
+              {% else %}
+              orange
+              {% endif %}
+            primary: HACS
+            secondary: |-
+              {% if has_value('sensor.hacs') %}
+              {% if states('sensor.hacs') == "0" %}
+              Up-to-date
+              {% else %}
+              {% for item in state_attr('sensor.hacs', 'repositories') -%}
+                {%- if loop.first %}{{states('sensor.hacs')}} update(s): {% elif loop.last %} en {% else %}, {% endif -%}
+                '{{ item.display_name | lower }}'
+              {%- endfor %}
+              {% endif %}
+              {% else %}
+              Geen informatie
+              {% endif %}
+            multiline_secondary: true
+            fill_container: false
+            tap_action:
+              action: navigate
+              navigation_path: ../hacs/entry
+          - type: custom:layout-card
+            layout_type: custom:masonry-layout
+            cards:
+              - type: custom:mushroom-update-card
+                name: AdGuard
+                collapsible_controls: true
+                show_buttons_control: true
+                icon: mdi:shield-check
+                entity: update.adguard_home_update
+              - type: custom:mushroom-update-card
+                entity: update.aircast_update
+                name: AirCast
+                icon: mdi:cast-variant
+                collapsible_controls: true
+                show_buttons_control: true
+              - type: custom:mushroom-update-card
+                entity: update.home_assistant_google_drive_backup_update
+                show_buttons_control: true
+                name: Back-Ups
+                collapsible_controls: true
+                icon: mdi:google-drive
+              - type: custom:mushroom-update-card
+                name: File Editor
+                show_buttons_control: true
+                collapsible_controls: true
+                entity: update.file_editor_update
+                icon: ''
+              - type: custom:mushroom-update-card
+                entity: update.mosquitto_broker_update
+                collapsible_controls: true
+                show_buttons_control: true
+                name: MQTT
+                fill_container: false
+              - type: custom:mushroom-update-card
+                entity: update.ssh_web_terminal_update
+                collapsible_controls: true
+                show_buttons_control: true
+                name: SSH Terminal
+                fill_container: false
+                icon: mdi:console
+              - type: custom:mushroom-update-card
+                entity: update.tailscale_update
+                show_buttons_control: true
+                collapsible_controls: true
+                name: Tailscale
+            layout:
+              column_widths: 51% 51%
+              width: 145
+              margin: 0px
+              card_margin: 4px 4px 8px
+              min_height: 1
+        view_layout:
+          grid-area: right1
+
+title: Home Assistant
